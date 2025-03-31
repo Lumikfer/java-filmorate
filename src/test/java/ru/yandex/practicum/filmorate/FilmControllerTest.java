@@ -20,7 +20,7 @@ class FilmControllerTest {
         controller = new FilmController();
         validFilm = new Film();
         validFilm.setName("Inception");
-        validFilm.setRealeseDate(LocalDate.of(2010, 7, 16));
+        validFilm.setReleaseDate(LocalDate.of(2010, 7, 16));
         validFilm.setDuration(148);
     }
 
@@ -35,7 +35,7 @@ class FilmControllerTest {
     @Test
     void addFilm_InvalidDate_ShouldThrowException() {
         Film invalidFilm = new Film();
-        invalidFilm.setRealeseDate(LocalDate.of(1890, 1, 1));
+        invalidFilm.setReleaseDate(LocalDate.of(1890, 1, 1));
 
         assertThrows(ValidationException.class, () ->
                 controller.addFilm(invalidFilm)

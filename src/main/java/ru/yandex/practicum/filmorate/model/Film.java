@@ -19,7 +19,7 @@ public class Film {
     private String description;
 
     @PastOrPresent(message = "Дата релиза не может быть в будущем")
-    private LocalDate realeseDate;
+    private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность не может отрицательным числом.")
     private int duration;//хранение в минутах

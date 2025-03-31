@@ -22,6 +22,9 @@ public class UserController {
     @PostMapping
     public User adduser(@Valid @RequestBody User user) {
         user.setId(userId++);
+        if (user.getName() == null) {
+            user.setName(user.getLogin());
+        }
         users.put(user.getId(), user);
         log.info("Пользователь добавлен id: " + user.getId());
         return user;

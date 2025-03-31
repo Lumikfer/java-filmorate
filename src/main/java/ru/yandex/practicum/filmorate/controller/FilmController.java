@@ -12,25 +12,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
     Map<Integer, Film> films = new HashMap<>();
-    private final AtomicInteger id = new AtomicInteger(0);//с учетом на работу в многопоточности
+    private static int filmId = 1;
     private final LocalDate targetDate = LocalDate.of(1895, 12, 29);
 
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
 
-        if (film.getRealeseDate().isBefore(targetDate)) {
+        if (film.getReleaseDate().isBefore(targetDate)) {
             throw new ValidationException("Дата выхода похже 1895");
-
         }
-        film.setId(id.incrementAndGet());
+        film.setId(filmId++);
         films.put(film.getId(), film);
         log.info("Фильм успешно добавлен, id фильма: " + film.getId());
         return film;
