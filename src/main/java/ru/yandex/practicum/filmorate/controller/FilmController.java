@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,30 +20,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FilmController {
     Map<Integer, Film> films = new HashMap<>();
     private final AtomicInteger id = new AtomicInteger(0);//с учетом на работу в многопоточности
-    private final LocalDate targetDate = LocalDate.of(1895 , 12 ,29);
+    private final LocalDate targetDate = LocalDate.of(1895, 12, 29);
 
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
 
-        if(film.getRealeseDate().isBefore(targetDate)) {
+        if (film.getRealeseDate().isBefore(targetDate)) {
             throw new ValidationException("Дата выхода похже 1895");
 
         }
         film.setId(id.incrementAndGet());
         films.put(film.getId(), film);
-        log.info("Фильм успешно добавлен, id фильма: "+film.getId());
+        log.info("Фильм успешно добавлен, id фильма: " + film.getId());
         return film;
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        if(!films.containsKey(film.getId())) {
+        if (!films.containsKey(film.getId())) {
             log.warn("Фильм с данным  id  не найден", film.getId());
             throw new ValidationException("Фильм не найден");
         }
-        films.put(film.getId(),film);
-        log.info("Фильм обновлен, id: "+film.getId());
+        films.put(film.getId(), film);
+        log.info("Фильм обновлен, id: " + film.getId());
 
         return film;
     }
@@ -52,7 +51,7 @@ public class FilmController {
     @GetMapping
     public List<Film> getFilms() throws IOException {
         List<Film> film = new ArrayList<>(films.values());
-        if(film.isEmpty()) {
+        if (film.isEmpty()) {
             throw new ValidationException("Фильмы не найдены");
         }
         return film;

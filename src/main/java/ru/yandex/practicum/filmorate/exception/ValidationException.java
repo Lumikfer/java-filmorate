@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.exception;
 
 import lombok.Getter;
+
 import java.util.List;
 
 @Getter

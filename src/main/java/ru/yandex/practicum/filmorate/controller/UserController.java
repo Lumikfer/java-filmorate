@@ -22,17 +22,17 @@ public class UserController {
     @PostMapping
     public User adduser(@Valid @RequestBody User user) {
         user.setId(userId++);
-        users.put(user.getId(),user);
-        log.info("Пользователь добавлен id: "+user.getId());
+        users.put(user.getId(), user);
+        log.info("Пользователь добавлен id: " + user.getId());
         return user;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        if(!users.containsKey(user.getId())) {
+        if (!users.containsKey(user.getId())) {
             throw new ValidationException("Такого пользователя нет");
         }
-        users.put(user.getId(),user);
+        users.put(user.getId(), user);
         log.info("пользователь обновлен");
         return user;
     }
