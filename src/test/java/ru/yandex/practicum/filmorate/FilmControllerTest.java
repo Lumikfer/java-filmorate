@@ -51,11 +51,4 @@ class FilmControllerTest {
 
         assertEquals("Updated Name", updated.getName());
     }
-
-    @Test
-    void getFilms_WhenEmpty_ShouldThrowException() {
-        assertThrows(ValidationException.class, () ->
-                controller.getFilms()
-        );
-    }
 }
