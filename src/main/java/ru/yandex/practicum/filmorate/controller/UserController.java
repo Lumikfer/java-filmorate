@@ -21,10 +21,8 @@ public class UserController {
 
     @PostMapping
     public User adduser(@Valid @RequestBody User user) {
+        valid(user);
         user.setId(userId++);
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-        }
         users.put(user.getId(), user);
         log.info("Пользователь добавлен id: " + user.getId());
         return user;
@@ -32,6 +30,7 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
+        valid(user);
         if (!users.containsKey(user.getId())) {
             throw new ValidationException("Такого пользователя нет");
         }
@@ -45,4 +44,12 @@ public class UserController {
         List<User> user = new ArrayList<>(users.values());
         return user;
     }
+
+    private void valid(User user) {
+        if (user.getName() == null) {
+            user.setName(user.getLogin());
+        }
+    }
+
+
 }

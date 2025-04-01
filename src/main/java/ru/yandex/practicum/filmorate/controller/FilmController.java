@@ -25,9 +25,7 @@ public class FilmController {
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
 
-        if (film.getReleaseDate().isBefore(targetDate)) {
-            throw new ValidationException("Дата выхода похже 1895");
-        }
+       valid(film);
         film.setId(filmId++);
         films.put(film.getId(), film);
         log.info("Фильм успешно добавлен, id фильма: " + film.getId());
@@ -36,6 +34,7 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
+        valid(film);
         if (!films.containsKey(film.getId())) {
             log.warn("Фильм с данным  id  не найден", film.getId());
             throw new ValidationException("Фильм не найден");
@@ -50,9 +49,16 @@ public class FilmController {
     public List<Film> getFilms() throws IOException {
         List<Film> film = new ArrayList<>(films.values());
         if (film.isEmpty()) {
-            throw new ValidationException("Фильмы не найдены");
+            return new ArrayList<>();
         }
         return film;
+    }
+
+    private void valid(Film film) {
+        if (film.getReleaseDate().isBefore(targetDate)) {
+            throw new ValidationException("Дата выхода похже 1895");
+
+        }
     }
 
 }
