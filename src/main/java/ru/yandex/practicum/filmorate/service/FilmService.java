@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -32,7 +34,7 @@ public class FilmService {
 
 
     public Film updateFilm(Film film) {
-        if (filmStorage.getFilms().contains(film) || film == null) {
+        if (!filmStorage.getFilms().contains(film) || film == null) {
             throw new ValidationException("такого фильма нет");
         }
 
@@ -57,7 +59,7 @@ public class FilmService {
 
     public void filmLike(int userid, int filmid) {
         if (filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
-            throw new ValidationException("err");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film or user not found");
         }
         filmStorage.getFilmById(filmid).addLike(userid);
 
@@ -66,7 +68,7 @@ public class FilmService {
 
     public void deleteLike(int userid, int filmid) {
         if (filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
-            throw new ValidationException("err");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film or user not found");
         }
         filmStorage.getFilmById(filmid).getLike().remove(userid);
         log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " убрал лайк " + userStorage.getUserById(userid).getName());
