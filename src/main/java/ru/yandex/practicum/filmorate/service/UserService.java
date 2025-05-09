@@ -80,7 +80,7 @@ public class UserService {
         User users = userStorage.getUserById(friendid);
         userf.deleteFriend(friendid);
         users.deleteFriend(userid);
-        log.info(userStorage.getUserById(userid)+ " и "+userStorage.getUserById(friendid)+" удалились из друзей");
+        log.info(userStorage.getUserById(userid) + " и " + userStorage.getUserById(friendid) + " удалились из друзей");
     }
 
 
