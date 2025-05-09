@@ -70,11 +70,11 @@ public class FilmService {
         User user = userStorage.getUserById(userid);
 
         if (user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         if (!film.getLike().contains(userid)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Like not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         film.getLike().remove(userid);
@@ -83,7 +83,7 @@ public class FilmService {
     private Film getFilmOrThrow(int id) {
         Film film = filmStorage.getFilmById(id);
         if (film == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         return film;
     }

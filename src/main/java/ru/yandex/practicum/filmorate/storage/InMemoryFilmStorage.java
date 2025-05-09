@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import jakarta.validation.ValidationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -18,7 +20,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film addFilm(Film film) {
 
         if (films.containsValue(film) || film == null || film.getReleaseDate().isBefore(targetDate)) {
-            throw new ValidationException("Ошибка добавления");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
         film.setId(id++);
         films.put(film.getId(), film);
@@ -28,7 +30,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film updateFilm(Film film) {
         if (!films.containsValue(film) || film == null || film.getReleaseDate().isBefore(targetDate)) {
-            throw new ValidationException("такого фильма нет");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
         films.put(film.getId(), film);
         return film;
