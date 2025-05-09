@@ -29,6 +29,6 @@ public class User {
     private Set<Integer> friends = new HashSet<>();
 
     public Set<Integer> getFriends() {
-        return new HashSet<>(friends);
+        return friends != null ? friends : new HashSet<>();
     }
 }

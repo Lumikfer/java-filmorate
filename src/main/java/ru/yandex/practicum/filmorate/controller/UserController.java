@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -44,7 +45,12 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable int id) {
-        return userService.getFriendByIdUser(id);
+        return userService.getFriendByIdUser(id).stream()
+                .map(user -> {
+                    user.setFriends(null); // Исключаем рекурсию
+                    return user;
+                })
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -52,7 +58,12 @@ public class UserController {
             @PathVariable int id,
             @PathVariable int otherId
     ) {
-        return userService.getMutualFriends(id, otherId);
+        return userService.getMutualFriends(id, otherId).stream()
+                .map(user -> {
+                    user.setFriends(null);
+                    return user;
+                })
+                .collect(Collectors.toList());
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")

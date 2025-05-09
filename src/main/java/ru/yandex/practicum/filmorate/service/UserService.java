@@ -43,23 +43,34 @@ public class UserService {
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
 
+        userStorage.updateUser(user);
+        userStorage.updateUser(friend);
+
         return List.of(user, friend);
     }
 
     public List<User> getFriendByIdUser(int id) {
         User user = getUserOrThrow(id);
         return user.getFriends().stream()
-                .map(userStorage::getUserById)
+                .map(friendId -> {
+                    try {
+                        return userStorage.getUserById(friendId);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
     public List<User> getMutualFriends(int id1, int id2) {
-        Set<Integer> friends1 = getUserOrThrow(id1).getFriends();
+        Set<Integer> friends1 = new HashSet<>(getUserOrThrow(id1).getFriends());
         Set<Integer> friends2 = getUserOrThrow(id2).getFriends();
 
         return friends1.stream()
                 .filter(friends2::contains)
                 .map(userStorage::getUserById)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
