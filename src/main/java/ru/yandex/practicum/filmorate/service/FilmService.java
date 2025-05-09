@@ -16,99 +16,89 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FilmService {
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     @Autowired
-    private FilmStorage filmStorage;
-
-    @Autowired
-    private UserStorage userStorage;
-
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+    }
 
     public Film addFilm(Film film) {
-
         return filmStorage.addFilm(film);
     }
 
-
     public Film updateFilm(Film film) {
-        Film existingFilm = filmStorage.getFilmById(film.getId());
-        if (existingFilm == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
-        }
+        getFilmOrThrow(film.getId()); // Проверка существования фильма
         return filmStorage.updateFilm(film);
     }
-
 
     public Collection<Film> getFilms() {
         return filmStorage.getFilms();
     }
 
-
     public Film getFilmById(int id) {
-        return filmStorage.getFilmById(id);
+        return getFilmOrThrow(id);
     }
-
 
     public void deleteFilmById(int id) {
         filmStorage.deleteFilmById(id);
-
     }
 
-    public void filmLike(int userid, int filmid) {
-        if (filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film or user not found");
-        }
-        filmStorage.getFilmById(filmid).addLike(userid);
+    public void addLike(int userId, int filmId) {
+        Film film = getFilmOrThrow(filmId);
+        User user = getUserOrThrow(userId);
 
-        log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " поставил лайк " + userStorage.getUserById(userid).getName());
+        if (film.getLike().contains(userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Like already exists"
+            );
+        }
+
+        film.addLike(userId);
+        log.info("User {} liked film {}", user.getName(), film.getName());
     }
 
-    public void deleteLike(int userid, int filmid) {
-        Film film = getFilmOrThrow(filmid);
-        User user = userStorage.getUserById(userid);
+    public void deleteLike(int userId, int filmId) {
+        Film film = getFilmOrThrow(filmId);
+        getUserOrThrow(userId);
 
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        if (!film.getLike().remove(userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Like not found"
+            );
         }
+    }
 
-        if (!film.getLike().contains(userid)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Like not found");
-        }
-
-        film.getLike().remove(userid);
+    public List<Film> getPopularFilms(int count) {
+        return filmStorage.getFilms().stream()
+                .sorted(Comparator.comparingInt((Film f) -> f.getLike().size()).reversed())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     private Film getFilmOrThrow(int id) {
         Film film = filmStorage.getFilmById(id);
         if (film == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Film with id " + id + " not found"
+            );
         }
         return film;
     }
 
-    public List<String> getlikesfilm(int id) {
-        List<String> name = new ArrayList<>();
-        for (int i : filmStorage.getFilmById(id).getLike()) {
-            name.add(userStorage.getUserById(i).getName());
-
+    private User getUserOrThrow(int id) {
+        User user = userStorage.getUserById(id);
+        if (user == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User with id " + id + " not found"
+            );
         }
-        return name;
+        return user;
     }
-
-    public List<Film> getPopularFilms(int count) {
-        return filmStorage.getFilms().stream()
-                .sorted((f1, f2) -> {
-                    int likesCompare = Integer.compare(
-                            f2.getLike().size(),
-                            f1.getLike().size()
-                    );
-
-                    return likesCompare != 0
-                            ? likesCompare
-                            : f1.getName().compareTo(f2.getName());
-                })
-                .limit(count)
-                .collect(Collectors.toList());
-    }
-
 }
