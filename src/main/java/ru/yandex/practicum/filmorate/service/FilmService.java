@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -54,13 +55,14 @@ public class FilmService {
 
     }
 
-    public void filmLike(int userid, int filmid) {
+    public ResponseEntity<Void> filmLike(int userid, int filmid) {
         if (filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film or user not found");
+            return ResponseEntity.notFound().build();
         }
         filmStorage.getFilmById(filmid).addLike(userid);
 
         log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " поставил лайк " + userStorage.getUserById(userid).getName());
+        return ResponseEntity.ok().build();
     }
 
     public void deleteLike(int userid, int filmid) {

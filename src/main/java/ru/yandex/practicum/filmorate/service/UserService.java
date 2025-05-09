@@ -98,8 +98,8 @@ public class UserService {
             throw new ValidationException("User not found");
         }
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        user.deleteFriend(friendId);
+        friend.deleteFriend(userId);
     }
 
 
