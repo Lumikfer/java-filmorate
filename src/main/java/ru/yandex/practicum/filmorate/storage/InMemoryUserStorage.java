@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.*;
 
 @Component
-public class InMemoryUserStorage implements  UserStorage {
+public class InMemoryUserStorage implements UserStorage {
 
 
     Map<Integer, User> users = new HashMap<>();
@@ -14,17 +14,17 @@ public class InMemoryUserStorage implements  UserStorage {
 
     @Override
     public User addUser(User user) {
-            user.setId(id++);
-            users.put(user.getId(), user);
-            return user;
+        user.setId(id++);
+        users.put(user.getId(), user);
+        return user;
 
     }
 
     @Override
     public User deleteUserById(int id) {
         User user = users.get(id);
-        if(user == null) {
-            throw  new RuntimeException("Пользователь не найден");
+        if (user == null) {
+            throw new RuntimeException("Пользователь не найден");
         }
         users.remove(user);
         return user;
@@ -32,18 +32,18 @@ public class InMemoryUserStorage implements  UserStorage {
 
     @Override
     public User getUserById(int id) {
-        if(users.get(id) == null) {
-            throw  new RuntimeException("Пользователь не найден");
+        if (users.get(id) == null) {
+            throw new RuntimeException("Пользователь не найден");
         }
         return users.get(id);
     }
 
     @Override
     public User updateUser(User user) {
-        if(user == null|| !users.containsValue(user)) {
+        if (user == null || !users.containsValue(user)) {
             throw new RuntimeException("Пользователь не найден");
         }
-        users.put(user.getId(),user);
+        users.put(user.getId(), user);
         return user;
 
     }

@@ -24,7 +24,7 @@ public class FilmService {
 
     public Film addFilm(Film film) {
 
-        if(filmStorage.getFilms().contains(film)||film == null){
+        if (filmStorage.getFilms().contains(film) || film == null) {
             throw new ValidationException("такой film уже есть ");
         }
 
@@ -33,7 +33,7 @@ public class FilmService {
 
 
     public Film updateFilm(Film film) {
-        if(filmStorage.getFilms().contains( film)||film==null) {
+        if (filmStorage.getFilms().contains(film) || film == null) {
             throw new ValidationException("такого фильма нет");
         }
 
@@ -52,24 +52,24 @@ public class FilmService {
 
 
     public void deleteFilmById(int id) {
-       filmStorage.deleteFilmById(id);
+        filmStorage.deleteFilmById(id);
 
     }
 
-    public void filmLike(int userid,int filmid) {
+    public void filmLike(int userid, int filmid) {
         filmStorage.getFilmById(filmid).addLike(userid);
-        log.info("фильму " + filmStorage.getFilmById(filmid).getName()+" поставил лайк "+userStorage.getUserById(userid).getName());
+        log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " поставил лайк " + userStorage.getUserById(userid).getName());
     }
 
-    public void deleteLike(int userid,int filmid) {
+    public void deleteLike(int userid, int filmid) {
         filmStorage.getFilmById(filmid).getLike().remove(userid);
-        log.info("фильму " + filmStorage.getFilmById(filmid).getName()+" убрал лайк "+userStorage.getUserById(userid).getName());
+        log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " убрал лайк " + userStorage.getUserById(userid).getName());
     }
 
     public List<String> getlikesfilm(int id) {
-       List<String> name = new ArrayList<>();
-        for (int i: filmStorage.getFilmById(id).getLike()) {
-           name.add( userStorage.getUserById(i).getName());
+        List<String> name = new ArrayList<>();
+        for (int i : filmStorage.getFilmById(id).getLike()) {
+            name.add(userStorage.getUserById(i).getName());
 
         }
         return name;

@@ -21,7 +21,6 @@ public class Film {
     }
 
 
-
     @NotBlank(message = "Название не может быть пустым.")
     private String name;
 

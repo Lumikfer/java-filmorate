@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Component
-public class InMemoryFilmStorage implements  FilmStorage {
+public class InMemoryFilmStorage implements FilmStorage {
 
     Map<Integer, Film> films = new HashMap<>();
     private static int id = 1;
@@ -18,7 +18,7 @@ public class InMemoryFilmStorage implements  FilmStorage {
     @Override
     public Film addFilm(Film film) {
 
-        if(films.containsValue(film)||film == null||film.getReleaseDate().isBefore(targetDate)){
+        if (films.containsValue(film) || film == null || film.getReleaseDate().isBefore(targetDate)) {
             throw new ValidationException("Ошибка добавления");
         }
         film.setId(id++);
@@ -28,7 +28,7 @@ public class InMemoryFilmStorage implements  FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        if(!films.containsValue(film)||film==null||film.getReleaseDate().isBefore(targetDate)) {
+        if (!films.containsValue(film) || film == null || film.getReleaseDate().isBefore(targetDate)) {
             throw new ValidationException("такого фильма нет");
         }
         films.put(film.getId(), film);

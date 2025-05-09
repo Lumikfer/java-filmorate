@@ -33,12 +33,12 @@ public class UserController {
 
     @GetMapping
     public Collection<User> getUsers() {
-        return  userService.getUsers();
+        return userService.getUsers();
     }
 
     @PutMapping("{userId}/{userId2}/friend")
-    public void addUser(@PathVariable int userId,@PathVariable int userId2) {
-        userService.addFriend(userId,userId2);
+    public void addUser(@PathVariable int userId, @PathVariable int userId2) {
+        userService.addFriend(userId, userId2);
     }
 
     @GetMapping("{id}/friends")
@@ -47,13 +47,13 @@ public class UserController {
     }
 
     @GetMapping("{userid}/friends/common/{otherId}")
-    public List<User> getMutualFriend(@PathVariable int userid,@PathVariable int otherId) {
-        return userService.getMutualFriends(userid,otherId);
+    public List<User> getMutualFriend(@PathVariable int userid, @PathVariable int otherId) {
+        return userService.getMutualFriends(userid, otherId);
     }
 
     @DeleteMapping("{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable int userid,@PathVariable int friendId) {
-        userService.deleteFriend(userid,friendId);
+    public void deleteFriend(@PathVariable int userid, @PathVariable int friendId) {
+        userService.deleteFriend(userid, friendId);
     }
 
 

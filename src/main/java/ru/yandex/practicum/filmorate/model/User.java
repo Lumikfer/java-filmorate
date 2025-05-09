@@ -14,7 +14,7 @@ public class User {
     private Set<Integer> friends = new HashSet<>();
 
     public void friendsadd(User user) {
-        if(user.getId() == this.id) {
+        if (user.getId() == this.id) {
             throw new IllegalArgumentException("Нельзя добавить себя в друзья");
         }
         friends.add(user.getId());

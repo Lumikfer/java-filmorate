@@ -7,9 +7,13 @@ import java.util.Collection;
 public interface UserStorage {
 
     User addUser(User user);
+
     User deleteUserById(int id);
+
     User getUserById(int id);
+
     User updateUser(User user);
+
     Collection<User> getUsers();
 
 }
