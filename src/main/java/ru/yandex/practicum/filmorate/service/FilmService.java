@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -26,18 +27,15 @@ public class FilmService {
 
     public Film addFilm(Film film) {
 
-        if (filmStorage.getFilms().contains(film) || film == null) {
-            throw new ValidationException("такой film уже есть ");
-        }
         return filmStorage.addFilm(film);
     }
 
 
     public Film updateFilm(Film film) {
-        if (!filmStorage.getFilms().contains(film) || film == null) {
-            throw new ValidationException("такого фильма нет");
+        Film existingFilm = filmStorage.getFilmById(film.getId());
+        if (existingFilm == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
         }
-
         return filmStorage.updateFilm(film);
     }
 
@@ -67,11 +65,26 @@ public class FilmService {
     }
 
     public void deleteLike(int userid, int filmid) {
-        if (filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film or user not found");
+        Film film = getFilmOrThrow(filmid);
+        User user = userStorage.getUserById(userid);
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        filmStorage.getFilmById(filmid).getLike().remove(userid);
-        log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " убрал лайк " + userStorage.getUserById(userid).getName());
+
+        if (!film.getLike().contains(userid)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Like not found");
+        }
+
+        film.getLike().remove(userid);
+    }
+
+    private Film getFilmOrThrow(int id) {
+        Film film = filmStorage.getFilmById(id);
+        if (film == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+        }
+        return film;
     }
 
     public List<String> getlikesfilm(int id) {

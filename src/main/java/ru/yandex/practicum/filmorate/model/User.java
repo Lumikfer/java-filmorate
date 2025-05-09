@@ -13,11 +13,11 @@ public class User {
     private int id;
     private Set<Integer> friends = new HashSet<>();
 
-    public void friendsadd(User user) {
-        if (user.getId() == this.id) {
+    public void friendsadd(int id) {
+        if (id == this.id) {
             throw new IllegalArgumentException("Нельзя добавить себя в друзья");
         }
-        friends.add(user.getId());
+        friends.add(id);
     }
 
     public void deleteFriend(int id) {

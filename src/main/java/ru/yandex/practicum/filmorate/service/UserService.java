@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
@@ -18,15 +20,21 @@ public class UserService {
     private UserStorage userStorage;
 
     public List<User> addFriend(int idf, int ids) {
-        User userFirst = userStorage.getUserById(idf);
-        User userSecond = userStorage.getUserById(ids);
-        userFirst.friendsadd(userSecond);
-        userSecond.friendsadd(userFirst);
-        log.info("В друзья добавились " + userFirst.getName() + " и " + userSecond.getName());
-        List<User> friend = new ArrayList<>();
-        friend.add(userFirst);
-        friend.add(userSecond);
-        return friend;
+        User userFirst = getUserOrThrow(idf);
+        User userSecond = getUserOrThrow(ids);
+
+        userFirst.friendsadd(ids);
+        userSecond.friendsadd(idf);
+
+        return List.of(userFirst, userSecond);
+    }
+
+    private User getUserOrThrow(int id) {
+        User user = userStorage.getUserById(id);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        return user;
     }
 
     public User addUser(User user) {
