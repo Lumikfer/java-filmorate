@@ -50,10 +50,7 @@ public class UserService {
         if (existingUser == null) {
             throw new ValidationException("User not found");
         }
-        existingUser.setEmail(user.getEmail());
-        existingUser.setLogin(user.getLogin());
-        existingUser.setName(user.getName());
-        existingUser.setBirthday(user.getBirthday());
+       userStorage.updateUser(user);
         return existingUser;
     }
 
@@ -100,6 +97,8 @@ public class UserService {
 
         user.deleteFriend(friendId);
         friend.deleteFriend(userId);
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(userId);
     }
 
 
