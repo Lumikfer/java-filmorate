@@ -43,6 +43,7 @@ public class User {
     private String email;
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
-    @JsonFormat(pattern = "yyyy.MM.dd")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
+
 }

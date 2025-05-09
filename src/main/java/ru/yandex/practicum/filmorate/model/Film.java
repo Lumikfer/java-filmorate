@@ -27,8 +27,9 @@ public class Film {
     @Size(max = 200, message = "Максимальная длина описания — 200 символов.")
     private String description;
 
-    @JsonFormat(pattern = "yyyy.MM.dd")
+
     @PastOrPresent(message = "Дата релиза не может быть в будущем")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность не может отрицательным числом.")
