@@ -42,6 +42,8 @@ public class UserService {
 
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
+        user.addFriend(friendId);
+        friend.addFriend(userId);
 
         userStorage.updateUser(user);
         userStorage.updateUser(friend);
