@@ -76,7 +76,11 @@ public class UserService {
     }
 
     public void deleteFriend(int userid, int friendid) {
-
+        User userf = userStorage.getUserById(userid);
+        User users = userStorage.getUserById(friendid);
+        userf.deleteFriend(friendid);
+        users.deleteFriend(userid);
+        log.info(userStorage.getUserById(userid)+ " и "+userStorage.getUserById(friendid)+" удалились из друзей");
     }
 
 

@@ -27,7 +27,6 @@ public class FilmService {
         if (filmStorage.getFilms().contains(film) || film == null) {
             throw new ValidationException("такой film уже есть ");
         }
-
         return filmStorage.addFilm(film);
     }
 

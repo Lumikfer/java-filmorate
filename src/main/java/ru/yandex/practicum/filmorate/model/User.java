@@ -20,6 +20,10 @@ public class User {
         friends.add(user.getId());
     }
 
+    public void deleteFriend(int id) {
+        friends.remove(id);
+    }
+
 
     private void valid(User user) {
         if (user.getName() == null) {
