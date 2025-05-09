@@ -1,51 +1,47 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
-
-
-    Map<Integer, User> users = new HashMap<>();
-    private static int id = 1;
+    private final Map<Integer, User> users = new HashMap<>();
+    private int id = 1;
 
     @Override
     public User addUser(User user) {
         user.setId(id++);
         users.put(user.getId(), user);
         return user;
-
     }
 
     @Override
     public User deleteUserById(int id) {
-        User user = users.get(id);
-        if (user == null) {
-            throw new RuntimeException("Пользователь не найден");
+        if (!users.containsKey(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        users.remove(user);
-        return user;
+        return users.remove(id);
     }
 
     @Override
     public User getUserById(int id) {
-        if (users.get(id) == null) {
-            throw new RuntimeException("Пользователь не найден");
+        if (!users.containsKey(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         return users.get(id);
     }
 
     @Override
     public User updateUser(User user) {
-        if (user == null || !users.containsValue(user)) {
-            throw new RuntimeException("Пользователь не найден");
+        if (!users.containsKey(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         users.put(user.getId(), user);
         return user;
-
     }
 
     @Override

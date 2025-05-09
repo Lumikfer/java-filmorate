@@ -10,17 +10,13 @@ import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-
-    Map<Integer, Film> films = new HashMap<>();
-    private static int id = 1;
-    private final LocalDate targetDate = LocalDate.of(1895, 12, 29);
+    private final Map<Integer, Film> films = new HashMap<>();
+    private int id = 1;
+    private final LocalDate targetDate = LocalDate.of(1895, 12, 28);
 
     @Override
     public Film addFilm(Film film) {
-
-        if (films.containsValue(film) || film == null || film.getReleaseDate().isBefore(targetDate)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
+        validateFilm(film);
         film.setId(id++);
         films.put(film.getId(), film);
         return film;
@@ -28,11 +24,18 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        if (!films.containsValue(film) || film == null || film.getReleaseDate().isBefore(targetDate)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if (!films.containsKey(film.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
         }
+        validateFilm(film);
         films.put(film.getId(), film);
         return film;
+    }
+
+    private void validateFilm(Film film) {
+        if (film.getReleaseDate().isBefore(targetDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Release date must be after 1895-12-28");
+        }
     }
 
     @Override
@@ -42,13 +45,14 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film getFilmById(int id) {
+        if (!films.containsKey(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+        }
         return films.get(id);
     }
 
     @Override
     public void deleteFilmById(int id) {
         films.remove(id);
-
     }
-
 }

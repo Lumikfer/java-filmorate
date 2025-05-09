@@ -11,39 +11,24 @@ import java.util.Set;
 @Data
 public class User {
     private int id;
-    private Set<Integer> friends = new HashSet<>();
 
-    public void friendsadd(int id) {
-        if (id == this.id) {
-            throw new IllegalArgumentException("Нельзя добавить себя в друзья");
-        }
-        friends.add(id);
-    }
-
-    public void deleteFriend(int id) {
-        friends.remove(id);
-    }
-
-
-    private void valid(User user) {
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-        }
-    }
-
-
-    @NotBlank(message = "Логин не может быть пустым")
-    @Pattern(regexp = "\\S+", message = "Логин не может содержать пробелы")
+    @NotBlank(message = "Login cannot be blank")
+    @Pattern(regexp = "\\S+", message = "Login cannot contain spaces")
     private String login;
 
     private String name;
 
-    @NotBlank(message = "Электронная почта не может быть пустой")
-    @Email(message = "Электронная почта должна содержать символ @")
+    @NotBlank(message = "Email cannot be blank")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @PastOrPresent(message = "Дата рождения не может быть в будущем")
+    @Past(message = "Birthday must be in the past")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
 
+    private Set<Integer> friends = new HashSet<>();
+
+    public Set<Integer> getFriends() {
+        return new HashSet<>(friends);
+    }
 }
