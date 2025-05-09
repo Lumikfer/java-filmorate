@@ -56,8 +56,8 @@ public class FilmService {
     }
 
     public void filmLike(int userid, int filmid) {
-        if(filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
-            throw  new ValidationException("err");
+        if (filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
+            throw new ValidationException("err");
         }
         filmStorage.getFilmById(filmid).addLike(userid);
 
@@ -65,8 +65,8 @@ public class FilmService {
     }
 
     public void deleteLike(int userid, int filmid) {
-        if(filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
-            throw  new ValidationException("err");
+        if (filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
+            throw new ValidationException("err");
         }
         filmStorage.getFilmById(filmid).getLike().remove(userid);
         log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " убрал лайк " + userStorage.getUserById(userid).getName());
