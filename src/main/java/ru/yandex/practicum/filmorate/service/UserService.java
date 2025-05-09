@@ -38,8 +38,15 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        userStorage.updateUser(user);
-        return user;
+        User existingUser = userStorage.getUserById(user.getId());
+        if (existingUser == null) {
+            throw new ValidationException("User not found");
+        }
+        existingUser.setEmail(user.getEmail());
+        existingUser.setLogin(user.getLogin());
+        existingUser.setName(user.getName());
+        existingUser.setBirthday(user.getBirthday());
+        return existingUser;
     }
 
     public Collection<User> getUsers() {
@@ -75,12 +82,16 @@ public class UserService {
         return mutualFriends;
     }
 
-    public void deleteFriend(int userid, int friendid) {
-        User userf = userStorage.getUserById(userid);
-        User users = userStorage.getUserById(friendid);
-        userf.deleteFriend(friendid);
-        users.deleteFriend(userid);
-        log.info(userStorage.getUserById(userid) + " и " + userStorage.getUserById(friendid) + " удалились из друзей");
+    public void deleteFriend(int userId, int friendId) {
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+
+        if (user == null || friend == null) {
+            throw new ValidationException("User not found");
+        }
+
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(userId);
     }
 
 

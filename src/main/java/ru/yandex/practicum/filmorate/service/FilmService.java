@@ -56,11 +56,18 @@ public class FilmService {
     }
 
     public void filmLike(int userid, int filmid) {
+        if(filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
+            throw  new ValidationException("err");
+        }
         filmStorage.getFilmById(filmid).addLike(userid);
+
         log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " поставил лайк " + userStorage.getUserById(userid).getName());
     }
 
     public void deleteLike(int userid, int filmid) {
+        if(filmStorage.getFilmById(filmid) == null || userStorage.getUserById(userid) == null) {
+            throw  new ValidationException("err");
+        }
         filmStorage.getFilmById(filmid).getLike().remove(userid);
         log.info("фильму " + filmStorage.getFilmById(filmid).getName() + " убрал лайк " + userStorage.getUserById(userid).getName());
     }
@@ -74,7 +81,7 @@ public class FilmService {
         return name;
     }
 
-    public List<Film> getPopularFilms() {
+    public List<Film> getPopularFilms(int count) {
         return filmStorage.getFilms().stream()
                 .sorted((f1, f2) -> {
                     int likesCompare = Integer.compare(
@@ -86,7 +93,7 @@ public class FilmService {
                             ? likesCompare
                             : f1.getName().compareTo(f2.getName());
                 })
-                .limit(10)
+                .limit(count)
                 .collect(Collectors.toList());
     }
 
