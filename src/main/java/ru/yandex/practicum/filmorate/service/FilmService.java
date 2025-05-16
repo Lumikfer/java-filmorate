@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,15 +14,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
 
     public Film addFilm(Film film) {
         return filmStorage.addFilm(film);
@@ -54,9 +49,6 @@ public class FilmService {
         Film film = getFilmOrThrow(filmId);
         getUserOrThrow(userId);
 
-        if (!film.getLike().remove(userId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Like not found");
-        }
     }
 
     public List<Film> getPopularFilms(int count) {
@@ -67,11 +59,8 @@ public class FilmService {
     }
 
     private Film getFilmOrThrow(int id) {
-        try {
             return filmStorage.getFilmById(id);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found", e);
-        }
+
     }
 
     private void getUserOrThrow(int id) {
