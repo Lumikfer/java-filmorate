@@ -8,7 +8,6 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.*;
 
@@ -28,7 +27,7 @@ public class FilmService {
     public Film addFilm(Film film) {
 
         Integer mpaId = film.getMpa().getId();
-        if (mpaStorage.getMpaById(mpaId)== null) {
+        if (mpaStorage.getMpaById(mpaId) == null) {
             throw new NotFoundException("Mpa not found");
         }
 
@@ -91,10 +90,9 @@ public class FilmService {
     }
 
 
-
     private User getUserOrThrow(int id) {
         try {
-          return   userStorage.getUserById(id);
+            return userStorage.getUserById(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
