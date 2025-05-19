@@ -69,6 +69,7 @@ public class UserService {
     }
 
     public List<User> getFriendByIdUser(int id) {
+        getUserOrThrow(id);
         List<User> friends = new ArrayList<>();
         for (User user : userStorage.getFriends(id)) {
             if (user == null) {
