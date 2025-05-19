@@ -26,11 +26,14 @@ public class FilmorateApplication  implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         ClassPathResource resource = new ClassPathResource("schema.sql");
+        ClassPathResource resources = new ClassPathResource("data.sql");
         String sql = new String(FileCopyUtils.copyToByteArray(resource.getInputStream()));
+        String sql1 = new String(FileCopyUtils.copyToByteArray(resources.getInputStream()));
 
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
+            stmt.execute(sql1);
         }
     }
 
