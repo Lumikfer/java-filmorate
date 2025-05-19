@@ -1,25 +1,50 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FilmService {
+    @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
+    @Qualifier("userDbStorage")
     private final UserStorage userStorage;
+    private final MpaStorage mpaStorage;
+    private final GenreStorage genreStorage;
 
     public Film addFilm(Film film) {
+        // Проверка MPA
+        Mpa mpa = mpaStorage.getMpaById(film.getMpa().getId());
+        if (mpa == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "MPA not found");
+        }
+        film.setMpa(mpa);
+
+        // Проверка жанров
+        Set<Genre> validatedGenres = new HashSet<>();
+        for (Genre genre : film.getGenres()) {
+            Genre existing = genreStorage.getGenreById(genre.getId());
+            if (existing == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found: " + genre.getId());
+            }
+            validatedGenres.add(existing);
+        }
+        film.setGenres(new ArrayList<>(validatedGenres));
+
         return filmStorage.addFilm(film);
     }
 
@@ -62,6 +87,7 @@ public class FilmService {
             return filmStorage.getFilmById(id);
 
     }
+
 
     private void getUserOrThrow(int id) {
         try {

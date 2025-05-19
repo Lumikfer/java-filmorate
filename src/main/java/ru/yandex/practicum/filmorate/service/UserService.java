@@ -1,7 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -11,8 +14,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
-
 
 
     public User addUser(User user) {
@@ -35,54 +38,37 @@ public class UserService {
     }
 
     public List<User> addFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
+        userStorage.addFriend(userId,friendId);
+        return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
+    }
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-        user.addFriend(friendId);
-        friend.addFriend(userId);
-
-        userStorage.updateUser(user);
-        userStorage.updateUser(friend);
-
-        return List.of(user, friend);
+    public List<User> approveFriend(int userId, int friendId) {
+       if(userStorage.getUserById(userId).getFriends().contains(friendId)) {
+           addFriend(userId,friendId);
+           userStorage.updateUser(userStorage.getUserById(userId));
+           userStorage.updateUser(userStorage.getUserById(friendId));
+           return List.of(userStorage.getUserById(userId),userStorage.getUserById(friendId));
+       }
+        return List.of(userStorage.getUserById(userId));
     }
 
     public List<User> getFriendByIdUser(int id) {
-        User user = getUserOrThrow(id);
-        return user.getFriends().stream()
-                .map(friendId -> {
-                    try {
-                        return userStorage.getUserById(friendId);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return userStorage.getFriends(id);
     }
 
     public List<User> getMutualFriends(int id1, int id2) {
-        Set<Integer> friends1 = new HashSet<>(getUserOrThrow(id1).getFriends());
-        Set<Integer> friends2 = getUserOrThrow(id2).getFriends();
-
-        return friends1.stream()
-                .filter(friends2::contains)
-                .map(userStorage::getUserById)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return userStorage.getCommonFriends(id1, id2);
     }
 
     public void deleteFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        userStorage.removeFriend(userId, friendId);
     }
 
     private User getUserOrThrow(int id) {
-        return userStorage.getUserById(id);
+        User user = userStorage.getUserById(id);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        return user;
     }
 }
