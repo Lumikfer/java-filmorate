@@ -29,7 +29,7 @@ public class FilmService {
 
         Mpa mpa = mpaStorage.getMpaById(film.getMpa().getId());
         if (mpa == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "MPA not found");
+            throw new NotFoundException("MPA not found with id: " + film.getMpa().getId());
         }
         film.setMpa(mpa);
 
@@ -73,6 +73,12 @@ public class FilmService {
         filmStorage.addLike(filmId, userId);
     }
 
+    public void deleteLike(int filmId, int userId) {
+        getFilmOrThrow(filmId);
+        getUserOrThrow(userId);
+        filmStorage.removeLike(filmId, userId);
+    }
+
     private Film getFilmOrThrow(int id) {
         Film film = filmStorage.getFilmById(id);
         if (film == null) {
@@ -81,18 +87,8 @@ public class FilmService {
         return film;
     }
 
-    public void deleteLike(int filmId, int userId) {
-        Film film = getFilmOrThrow(filmId);
-        getUserOrThrow(userId);
-        filmStorage.removeLike(filmId,userId);
-
-    }
-
     public List<Film> getPopularFilms(int count) {
-        return filmStorage.getFilms().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLike().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getPopularFilms(count);
     }
 
 

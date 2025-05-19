@@ -50,7 +50,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-
+        getFilmOrThrow(film.getId());
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? " +
                 "WHERE film_id = ?";
         jdbcTemplate.update(sql,
@@ -63,6 +63,14 @@ public class FilmDbStorage implements FilmStorage {
 
         updateGenres(film);
         return getFilmById(film.getId());
+    }
+
+    private Film getFilmOrThrow(int id) {
+        Film film = getFilmById(id);
+        if (film == null) {
+            throw new NotFoundException("Film not found with id: " + id);
+        }
+        return film;
     }
 
     private void updateGenres(Film film) {
@@ -148,6 +156,19 @@ public class FilmDbStorage implements FilmStorage {
     public List<Integer> getLikesForFilm(int filmId) {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
         return jdbcTemplate.queryForList(sql, Integer.class, filmId);
+    }
+
+    @Override
+    public List<Film> getPopularFilms(int count) {
+        String sql = "SELECT f.*, r.name AS rating_name, COUNT(l.user_id) AS likes_count "
+                + "FROM films f "
+                + "LEFT JOIN film_likes l ON f.film_id = l.film_id "
+                + "JOIN ratings r ON f.rating_id = r.rating_id "
+                + "GROUP BY f.film_id "
+                + "ORDER BY likes_count DESC "
+                + "LIMIT ?";
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
     }
 
 }
