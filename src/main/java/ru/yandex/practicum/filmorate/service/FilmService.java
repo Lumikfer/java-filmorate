@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FilmService {
     @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
@@ -28,13 +30,16 @@ public class FilmService {
 
         Integer mpaId = film.getMpa().getId();
         if (mpaStorage.getMpaById(mpaId) == null) {
+            log.info("mpa");
             throw new NotFoundException("Mpa not found");
         }
 
         Set<Genre> validatedGenres = new HashSet<>();
+        log.info("genre");
         for (Genre genre : film.getGenres()) {
             Genre existing = genreStorage.getGenreById(genre.getId());
             if (existing == null) {
+
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found: " + genre.getId());
             }
             validatedGenres.add(existing);
@@ -90,9 +95,10 @@ public class FilmService {
     }
 
 
+
     private User getUserOrThrow(int id) {
         try {
-            return userStorage.getUserById(id);
+          return   userStorage.getUserById(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }

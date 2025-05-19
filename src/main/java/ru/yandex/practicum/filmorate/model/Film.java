@@ -26,7 +26,7 @@ public class Film {
     @Positive(message = "Duration must be positive")
     private int duration;
 
-    private List<Genre> genres = new ArrayList<>(); // добавляем жанры
+    private List<Genre> genres = new ArrayList<>();
 
     private Mpa mpa;
 
