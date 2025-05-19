@@ -47,7 +47,7 @@ public class FilmService {
     public Film updateFilm(Film film) {
         validateFilm(film);
         Film film1 = getFilmOrThrow(film.getId());
-        filmStorage.updateFilm(film);
+        filmStorage.updateFilm(film1);
         return film1;
     }
 
@@ -90,11 +90,10 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
-    private ResponseEntity<Film> validateFilm(Film film) {
+    private void validateFilm(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Release date must be after 1895-12-28");
         }
-        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
 

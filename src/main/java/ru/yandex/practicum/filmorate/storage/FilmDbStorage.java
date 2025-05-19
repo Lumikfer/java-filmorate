@@ -53,6 +53,7 @@ public class FilmDbStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         getFilmOrThrow(film.getId());
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
+        Film newFilm = film;
         jdbcTemplate.update(
                 sql,
                 film.getName(),
@@ -63,7 +64,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId()
         );
         updateGenres(film);
-        return film;
+        return newFilm;
     }
 
     private Film getFilmOrThrow(int id) {
