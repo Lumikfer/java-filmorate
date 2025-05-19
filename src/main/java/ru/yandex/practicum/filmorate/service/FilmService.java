@@ -30,7 +30,7 @@ public class FilmService {
 
         Integer mpaId = film.getMpa().getId();
         if (mpaStorage.getMpaById(mpaId) == null) {
-            log.info("mpa");
+            log.info("mpa "+mpaId+" "+mpaStorage.getMpaById(mpaId));
             throw new NotFoundException("Mpa not found");
         }
 
