@@ -46,8 +46,7 @@ public class FilmService {
     public Film updateFilm(Film film) {
         validateFilm(film);
         Film film1 = getFilmOrThrow(film.getId());
-        filmStorage.updateFilm(film1);
-        return film1;
+        return  filmStorage.updateFilm(film1);
     }
 
     public Collection<Film> getFilms() {
