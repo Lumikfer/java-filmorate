@@ -63,7 +63,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId()
         );
         updateGenres(film);
-        return getFilmById(film.getId()); // Возвращает обновленный фильм из БД
+        return film;
     }
 
     private Film getFilmOrThrow(int id) {
