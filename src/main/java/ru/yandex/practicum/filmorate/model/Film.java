@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -20,7 +19,8 @@ public class Film {
     @Size(max = 200, message = "Description cannot be longer than 200 characters")
     private String description;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+
+    @PastOrPresent
     private LocalDate releaseDate;
 
     @Positive(message = "Duration must be positive")

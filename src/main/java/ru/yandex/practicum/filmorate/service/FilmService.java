@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.*;
 
+import java.time.LocalDate;
 import java.util.*;
 
 
@@ -26,8 +27,10 @@ public class FilmService {
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
 
-    public Film addFilm(Film film) {
+    private  LocalDate targetDate = LocalDate.of(1895, 12, 28);
 
+    public Film addFilm(Film film) {
+        validateFilm(film);
         Integer mpaId = film.getMpa().getId();
         if (mpaStorage.getMpaById(mpaId) == null) {
             throw new NotFoundException("Mpa not found");
@@ -48,6 +51,7 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
+        validateFilm(film);
         Film film1 = getFilmOrThrow(film.getId());
         filmStorage.updateFilm(film);
         return film1;
@@ -92,6 +96,11 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
+    private void validateFilm(Film film) {
+        if (film.getReleaseDate().isBefore(targetDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Release date must be after 1895-12-28");
+        }
+    }
 
 
     private User getUserOrThrow(int id) {

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -85,7 +86,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getFilms() {
 
-        String sql = "SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa m ON f.mpa_id = m.id";
+        String sql = "SELECT f.*, m.name AS mpa_name " +
+                "FROM films f " +
+                "JOIN mpa m ON f.mpa_id = m.id";
 
         return jdbcTemplate.query(sql, this::mapRowToFilm);
     }
@@ -93,7 +96,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilmById(int id) {
 
-        String sql = "SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa m ON f.mpa_id = m.id";
+        String sql = "SELECT f.*, m.name AS mpa_name " +
+                "FROM films f " +
+                "JOIN mpa m ON f.mpa_id = m.id " +
+                "WHERE f.id = ?";
 
         return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
     }
@@ -134,12 +140,21 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(int filmId, int userId) {
-        if (getFilmById(filmId) == null) {
-            throw new NotFoundException("Film not found");
+
+        Film film = getFilmById(filmId);
+        if (film == null) {
+            throw new NotFoundException("Фильм с id=" + filmId + " не найден.");
         }
         if (userStorage.getUserById(userId) == null) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
         }
+
+        String checkSql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
+        if (count != null && count > 0) {
+            throw new ValidationException("Лайк уже поставлен.");
+        }
+
 
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
@@ -147,7 +162,20 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void removeLike(int filmId, int userId) {
-        jdbcTemplate.update("DELETE FROM film_likes WHERE film_id = ? AND user_id = ?", filmId, userId);
+
+        Film film = getFilmById(filmId);
+        if (film == null) {
+            throw new NotFoundException("Фильм с id=" + filmId + " не найден.");
+        }
+        if (userStorage.getUserById(userId) == null) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
+        }
+
+        String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
+        int rowsDeleted = jdbcTemplate.update(sql, filmId, userId);
+        if (rowsDeleted == 0) {
+            throw new NotFoundException("Лайк не найден.");
+        }
     }
 
     public List<Integer> getLikesForFilm(int filmId) {
@@ -158,9 +186,12 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count) {
         String sql = "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS likes_count "
-                + "FROM films f LEFT JOIN film_likes l ON f.id = l.film_id "
+                + "FROM films f "
+                + "LEFT JOIN film_likes l ON f.id = l.film_id "
                 + "JOIN mpa m ON f.mpa_id = m.id "
-                + "GROUP BY f.id ORDER BY likes_count DESC LIMIT ?";
+                + "GROUP BY f.id "
+                + "ORDER BY likes_count DESC "
+                + "LIMIT ?";
 
         return jdbcTemplate.query(sql, this::mapRowToFilm, count);
     }

@@ -32,7 +32,7 @@ public class GenreDbStorage implements GenreStorage {
     public Genre getGenreById(Integer id) {
         log.debug("Fetching genre with id: {}", id);
         try {
-            String sql = "SELECT genre_id, name FROM genres WHERE genre_id = ?";
+            String sql = "SELECT genre_id, name FROM genres WHERE genre_id = ? ASC";
             Genre genre = jdbcTemplate.queryForObject(sql, this::mapRowToGenre, id);
             log.debug("Found genre: {}", genre);
             return genre;
