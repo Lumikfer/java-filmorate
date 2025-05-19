@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,7 +28,6 @@ public class FilmService {
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
 
-    private  LocalDate targetDate = LocalDate.of(1895, 12, 28);
 
     public Film addFilm(Film film) {
         validateFilm(film);
@@ -36,17 +36,11 @@ public class FilmService {
             throw new NotFoundException("Mpa not found");
         }
 
-        Set<Genre> validatedGenres = new HashSet<>();
+        Set<Genre> validatedGenres = new LinkedHashSet<>();
         for (Genre genre : film.getGenres()) {
-            Genre existing = genreStorage.getGenreById(genre.getId());
-            if (existing == null) {
-
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found: " + genre.getId());
-            }
-            validatedGenres.add(existing);
+            validatedGenres.add(genreStorage.getGenreById(genre.getId()));
         }
         film.setGenres(new ArrayList<>(validatedGenres));
-
         return filmStorage.addFilm(film);
     }
 
@@ -97,8 +91,8 @@ public class FilmService {
     }
 
     private void validateFilm(Film film) {
-        if (film.getReleaseDate().isBefore(targetDate)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Release date must be after 1895-12-28");
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года.");
         }
     }
 
