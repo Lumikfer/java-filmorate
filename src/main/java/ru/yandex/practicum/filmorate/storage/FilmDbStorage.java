@@ -53,13 +53,15 @@ public class FilmDbStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         getFilmOrThrow(film.getId());
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
-        jdbcTemplate.update(sql,
+        jdbcTemplate.update(
+                sql,
                 film.getName(),
                 film.getDescription(),
-                film.getReleaseDate(),
+                Date.valueOf(film.getReleaseDate()),
                 film.getDuration(),
                 film.getMpa().getId(),
-                film.getId());
+                film.getId()
+        );
         updateGenres(film);
         return getFilmById(film.getId());
     }
@@ -73,12 +75,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void updateGenres(Film film) {
-
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
-        Set<Genre> genres = new HashSet<>(film.getGenres());
+        List<Genre> genres = new ArrayList<>(film.getGenres());
+        genres.sort(Comparator.comparingInt(Genre::getId));
         for (Genre genre : genres) {
-            jdbcTemplate.update("INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
-                    film.getId(), genre.getId());
+            jdbcTemplate.update(
+                    "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
+                    film.getId(),
+                    genre.getId()
+            );
         }
     }
 
@@ -86,7 +91,7 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getFilms() {
         String sql = "SELECT f.*, m.name AS mpa_name " +
                 "FROM films f " +
-                "JOIN mpa m ON f.mpa_id = m.mpa_id"; // Исправлено на m.mpa_id
+                "JOIN mpa m ON f.mpa_id = m.mpa_id";
         return jdbcTemplate.query(sql, this::mapRowToFilm);
     }
 
@@ -95,13 +100,13 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT f.*, m.name AS mpa_name " +
                 "FROM films f " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
-                "WHERE f.film_id = ?"; // Исправлено на film_id
+                "WHERE f.film_id = ?";
         return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = new Film();
-        film.setId(rs.getInt("film_id")); // Исправлено с id на film_id
+        film.setId(rs.getInt("film_id"));
         film.setName(rs.getString("name"));
         film.setDescription(rs.getString("description"));
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
@@ -109,7 +114,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
 
         List<Genre> genres = new ArrayList<>(genreStorage.getFilmGenres(film.getId()));
-        genres.sort(Comparator.comparingInt(Genre::getId)); // Сортировка по id
+        genres.sort(Comparator.comparingInt(Genre::getId));
         film.setGenres(genres);
 
         return film;
@@ -186,7 +191,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films f " +
                 "LEFT JOIN film_likes l ON f.film_id = l.film_id " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
-                "GROUP BY f.film_id " + // Исправлено на film_id
+                "GROUP BY f.film_id " +
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sql, this::mapRowToFilm, count);

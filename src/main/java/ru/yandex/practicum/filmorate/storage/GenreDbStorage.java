@@ -46,7 +46,7 @@ public class GenreDbStorage implements GenreStorage {
         String sql = "SELECT g.* FROM film_genres fg " +
                 "JOIN genres g ON fg.genre_id = g.genre_id " +
                 "WHERE fg.film_id = ? " +
-                "ORDER BY g.genre_id ASC"; // Сортировка по возрастанию genre_id
+                "ORDER BY g.genre_id ASC";
         return new LinkedHashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
     }
 
