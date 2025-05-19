@@ -24,7 +24,6 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
-    private final MpaStorage mpaStorage;
     private final UserStorage userStorage;
 
     @Override
