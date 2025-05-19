@@ -44,7 +44,7 @@ public class UserController {
     public List<User> getFriends(@PathVariable int id) {
         return userService.getFriendByIdUser(id).stream()
                 .map(user -> {
-                    user.setFriends(null); // Исключаем рекурсию
+                    user.setFriends(null);
                     return user;
                 })
                 .collect(Collectors.toList());

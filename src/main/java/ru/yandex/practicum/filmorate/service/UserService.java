@@ -25,7 +25,7 @@ public class UserService {
     }
 
     public List<User> addFriend(int userId, int friendId) {
-        getUserOrThrow(userId); // Проверяет существование
+        getUserOrThrow(userId);
         getUserOrThrow(friendId);
 
         userStorage.addFriend(userId, friendId);
@@ -69,7 +69,16 @@ public class UserService {
     }
 
     public List<User> getFriendByIdUser(int id) {
-        return userStorage.getFriends(id);
+        List<User> friends = new ArrayList<>();
+        for(User user :userStorage.getFriends(id)) {
+            if(user == null) {
+                throw new NotFoundException("User not found with id: " + id);
+            }
+            else {
+                friends.add(user);
+            }
+        }
+        return friends;
     }
 
     public List<User> getMutualFriends(int id1, int id2) {
@@ -77,6 +86,8 @@ public class UserService {
     }
 
     public void deleteFriend(int userId, int friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
         userStorage.removeFriend(userId, friendId);
     }
 
