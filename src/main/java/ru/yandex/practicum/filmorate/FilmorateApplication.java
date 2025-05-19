@@ -14,9 +14,13 @@ import java.sql.Statement;
 
 @SpringBootApplication
 public class FilmorateApplication  implements CommandLineRunner {
+
     @Autowired
     private DataSource dataSource;
-    public static void main(String[] args) {SpringApplication.run(FilmorateApplication.class, args);}
+
+    public static void main(String[] args) {
+        SpringApplication.run(FilmorateApplication.class, args);
+    }
 
     @Override
     public void run(String... args) throws Exception {

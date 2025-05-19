@@ -16,17 +16,20 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Collection<Mpa> getAllMpa() {
+
         String sql = "SELECT * FROM ratings";
         return jdbcTemplate.query(sql, this::mapRowToMpa);
     }
 
     @Override
     public Mpa getMpaById(int id) {
+
         String sql = "SELECT * FROM ratings WHERE rating_id = ?";
         return jdbcTemplate.queryForObject(sql, this::mapRowToMpa, id);
     }
 
     private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
+
         return new Mpa(rs.getInt("rating_id"), rs.getString("name"));
     }
 }

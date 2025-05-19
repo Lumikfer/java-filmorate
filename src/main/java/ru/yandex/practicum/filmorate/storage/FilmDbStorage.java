@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -24,9 +25,11 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
+    private final UserStorage userStorage;
 
     @Override
     public Film addFilm(Film film) {
+
         String sql = "INSERT INTO films (name, description, release_date, duration, rating_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -48,6 +51,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
+
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? " +
                 "WHERE film_id = ?";
         jdbcTemplate.update(sql,
@@ -63,6 +67,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void updateGenres(Film film) {
+
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         Set<Genre> genres = new HashSet<>(film.getGenres());
         for (Genre genre : genres) {
@@ -73,6 +78,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getFilms() {
+
         String sql = "SELECT f.*, r.name AS rating_name FROM films f " +
                 "JOIN ratings r ON f.rating_id = r.rating_id";
         return jdbcTemplate.query(sql, this::mapRowToFilm);
@@ -80,16 +86,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film getFilmById(int id) {
+
         String sql = "SELECT f.*, r.name AS rating_name FROM films f " +
                 "JOIN ratings r ON f.rating_id = r.rating_id " +
                 "WHERE f.film_id = ?";
         return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
     }
 
-    @Override
-    public void deleteFilmById(int id) {
-
-    }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = new Film();
@@ -110,6 +113,40 @@ public class FilmDbStorage implements FilmStorage {
     private Set<Integer> getLikes(int filmId) {
         String sql = "SELECT user_id FROM likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.queryForList(sql, Integer.class, filmId));
+    }
+    @Override
+    public void deleteFilmById(int id) {
+        String checkSql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, id);
+
+        if (count == 0) {
+            throw new NotFoundException("Film with id " + id + " not found");
+        }
+
+        String sql = "DELETE FROM films WHERE film_id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public void addLike(int filmId, int userId) {
+        if (getFilmById(filmId) == null) {
+            throw new NotFoundException("Film not found");
+        }
+        if (userStorage.getUserById(userId) == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, userId);
+    }
+    @Override
+    public void removeLike(int filmId, int userId) {
+        jdbcTemplate.update("DELETE FROM film_likes WHERE film_id = ? AND user_id = ?", filmId, userId);
+    }
+
+    public List<Integer> getLikesForFilm(int filmId) {
+        String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
+        return jdbcTemplate.queryForList(sql, Integer.class, filmId);
     }
 
 }

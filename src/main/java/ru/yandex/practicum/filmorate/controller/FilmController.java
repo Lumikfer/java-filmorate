@@ -27,6 +27,7 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
+
         return filmService.updateFilm(film);
     }
 
@@ -53,5 +54,11 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable int id) {
         return filmService.getFilmById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFilm(@PathVariable int id) {
+        filmService.deleteFilmById(id);
     }
 }

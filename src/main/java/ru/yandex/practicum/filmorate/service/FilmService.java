@@ -5,13 +5,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,7 +47,9 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(film);
+        Film film1 = getFilmOrThrow(film.getId());
+        filmStorage.updateFilm(film);
+        return film1;
     }
 
     public Collection<Film> getFilms() {
@@ -65,13 +66,25 @@ public class FilmService {
 
     public void addLike(int filmId, int userId) {
         Film film = getFilmOrThrow(filmId);
-        getUserOrThrow(userId);
-        film.getLike().add(userId);
+        User user = userStorage.getUserById(userId);
+        if (user == null) {
+            throw new NotFoundException("User not found with id: " + userId);
+        }
+        filmStorage.addLike(filmId, userId);
+    }
+
+    private Film getFilmOrThrow(int id) {
+        Film film = filmStorage.getFilmById(id);
+        if (film == null) {
+            throw new NotFoundException("Film not found with id: " + id);
+        }
+        return film;
     }
 
     public void deleteLike(int filmId, int userId) {
         Film film = getFilmOrThrow(filmId);
         getUserOrThrow(userId);
+        filmStorage.removeLike(filmId,userId);
 
     }
 
@@ -82,15 +95,11 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    private Film getFilmOrThrow(int id) {
-        return filmStorage.getFilmById(id);
-
-    }
 
 
-    private void getUserOrThrow(int id) {
+    private User getUserOrThrow(int id) {
         try {
-            userStorage.getUserById(id);
+          return   userStorage.getUserById(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
