@@ -20,6 +20,7 @@ import java.util.*;
 @Primary
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
+
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
@@ -110,8 +111,5 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT user_id FROM likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.queryForList(sql, Integer.class, filmId));
     }
-
-
-
 
 }

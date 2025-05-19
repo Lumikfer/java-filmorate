@@ -38,17 +38,17 @@ public class UserService {
     }
 
     public List<User> addFriend(int userId, int friendId) {
-        userStorage.addFriend(userId,friendId);
+        userStorage.addFriend(userId, friendId);
         return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
     }
 
     public List<User> approveFriend(int userId, int friendId) {
-       if(userStorage.getUserById(userId).getFriends().contains(friendId)) {
-           addFriend(userId,friendId);
-           userStorage.updateUser(userStorage.getUserById(userId));
-           userStorage.updateUser(userStorage.getUserById(friendId));
-           return List.of(userStorage.getUserById(userId),userStorage.getUserById(friendId));
-       }
+        if (userStorage.getUserById(userId).getFriends().contains(friendId)) {
+            addFriend(userId, friendId);
+            userStorage.updateUser(userStorage.getUserById(userId));
+            userStorage.updateUser(userStorage.getUserById(friendId));
+            return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
+        }
         return List.of(userStorage.getUserById(userId));
     }
 

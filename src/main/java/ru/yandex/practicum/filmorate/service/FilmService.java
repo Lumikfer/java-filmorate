@@ -27,14 +27,13 @@ public class FilmService {
     private final GenreStorage genreStorage;
 
     public Film addFilm(Film film) {
-        // Проверка MPA
+
         Mpa mpa = mpaStorage.getMpaById(film.getMpa().getId());
         if (mpa == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "MPA not found");
         }
         film.setMpa(mpa);
 
-        // Проверка жанров
         Set<Genre> validatedGenres = new HashSet<>();
         for (Genre genre : film.getGenres()) {
             Genre existing = genreStorage.getGenreById(genre.getId());
@@ -84,7 +83,7 @@ public class FilmService {
     }
 
     private Film getFilmOrThrow(int id) {
-            return filmStorage.getFilmById(id);
+        return filmStorage.getFilmById(id);
 
     }
 
