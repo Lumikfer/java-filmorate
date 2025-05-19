@@ -30,12 +30,10 @@ public class FilmService {
 
         Integer mpaId = film.getMpa().getId();
         if (mpaStorage.getMpaById(mpaId) == null) {
-            log.info("mpa "+mpaId+" "+mpaStorage.getMpaById(mpaId));
             throw new NotFoundException("Mpa not found");
         }
 
         Set<Genre> validatedGenres = new HashSet<>();
-        log.info("genre");
         for (Genre genre : film.getGenres()) {
             Genre existing = genreStorage.getGenreById(genre.getId());
             if (existing == null) {
