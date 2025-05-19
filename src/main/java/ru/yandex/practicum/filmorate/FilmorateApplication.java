@@ -8,8 +8,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
 
 import javax.sql.DataSource;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -17,11 +16,11 @@ import java.sql.Statement;
 public class FilmorateApplication  implements CommandLineRunner {
     @Autowired
     private DataSource dataSource;
-    public static void main(String[] args) {
-        SpringApplication.run(FilmorateApplication.class, args);
-    }
+    public static void main(String[] args) {SpringApplication.run(FilmorateApplication.class, args);}
+
     @Override
     public void run(String... args) throws Exception {
+
         ClassPathResource resource = new ClassPathResource("schema.sql");
         String sql = new String(FileCopyUtils.copyToByteArray(resource.getInputStream()));
 

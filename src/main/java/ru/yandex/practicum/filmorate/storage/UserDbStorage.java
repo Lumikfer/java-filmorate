@@ -42,10 +42,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User deleteUserById(int id) {
+
         User user = getUserById(id);
-                if(user == null) {
-                    throw new RuntimeException("User not found with id: " + id);
-                }
+        if (user == null) {
+            throw new RuntimeException("User not found with id: " + id);
+        }
 
         String sql = "DELETE FROM users WHERE user_id = ?";
         jdbcTemplate.update(sql, id);
@@ -69,14 +70,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User updateUser(User user) {
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
-        int rowsUpdated = jdbcTemplate.update(
-                sql,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday(),
-                user.getId()
-        );
+        int rowsUpdated = jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
 
         if (rowsUpdated == 0) {
             throw new RuntimeException("User not found with id: " + user.getId());
@@ -87,13 +81,13 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addFriend(int userId, int friendId) {
         String sql = """
-        INSERT INTO FRIENDS (USER_ID, FRIEND_ID)
-        SELECT ?, ?
-        WHERE NOT EXISTS (
-            SELECT 1 FROM FRIENDS 
-            WHERE USER_ID = ? AND FRIEND_ID = ?
-        )
-        """;
+                INSERT INTO FRIENDS (USER_ID, FRIEND_ID)
+                SELECT ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM FRIENDS 
+                    WHERE USER_ID = ? AND FRIEND_ID = ?
+                )
+                """;
 
         jdbcTemplate.update(sql, userId, friendId, userId, friendId);
     }
@@ -110,29 +104,18 @@ public class UserDbStorage implements UserStorage {
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
-        return User.builder()
-                .id(rs.getInt("user_id"))
-                .email(rs.getString("email"))
-                .login(rs.getString("login"))
-                .name(rs.getString("name"))
-                .birthday(rs.getDate("birthday").toLocalDate())
-                .build();
+        return User.builder().id(rs.getInt("user_id")).email(rs.getString("email")).login(rs.getString("login")).name(rs.getString("name")).birthday(rs.getDate("birthday").toLocalDate()).build();
     }
 
     @Override
     public List<User> getFriends(int userId) {
-        String sql = "SELECT u.* FROM users u " +
-                "JOIN friends f ON u.user_id = f.friend_id " +
-                "WHERE f.user_id = ?";
+        String sql = "SELECT u.* FROM users u " + "JOIN friends f ON u.user_id = f.friend_id " + "WHERE f.user_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToUser, userId);
     }
 
-@Override
+    @Override
     public List<User> getCommonFriends(int userId, int otherId) {
-        String sql = "SELECT u.* FROM users u " +
-                "JOIN friends f1 ON u.user_id = f1.friend_id " +
-                "JOIN friends f2 ON u.user_id = f2.friend_id " +
-                "WHERE f1.user_id = ? AND f2.user_id = ?";
+        String sql = "SELECT u.* FROM users u " + "JOIN friends f1 ON u.user_id = f1.friend_id " + "JOIN friends f2 ON u.user_id = f2.friend_id " + "WHERE f1.user_id = ? AND f2.user_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
     }
 }
