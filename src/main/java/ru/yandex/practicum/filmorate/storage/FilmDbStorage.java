@@ -52,7 +52,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film updateFilm(Film film) {
         getFilmOrThrow(film.getId());
-        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE id = ?";
+        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
         jdbcTemplate.update(sql,
                 film.getName(),
                 film.getDescription(),
@@ -98,9 +98,8 @@ public class FilmDbStorage implements FilmStorage {
 
         String sql = "SELECT f.*, m.name AS mpa_name " +
                 "FROM films f " +
-                "JOIN mpa m ON f.mpa_id = m.id " +
-                "WHERE f.id = ?";
-
+                "JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "WHERE f.film_id = ?";
         return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
     }
 
@@ -114,9 +113,10 @@ public class FilmDbStorage implements FilmStorage {
         film.setDuration(rs.getInt("duration"));
         film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name"))); // Изменено здесь
 
-        Set<Genre> genres = new LinkedHashSet<>(genreStorage.getFilmGenres(film.getId()));
-        film.setGenres(new ArrayList<>(genres));
-        film.setLike(new HashSet<>(getLikes(film.getId())));
+        List<Genre> genres = new ArrayList<>(genreStorage.getFilmGenres(film.getId()));
+        genres.sort(Comparator.comparingInt(Genre::getId));
+        film.setGenres(genres);
+
         return film;
     }
 
@@ -185,14 +185,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS likes_count "
-                + "FROM films f "
-                + "LEFT JOIN film_likes l ON f.id = l.film_id "
-                + "JOIN mpa m ON f.mpa_id = m.id "
-                + "GROUP BY f.id "
-                + "ORDER BY likes_count DESC "
-                + "LIMIT ?";
-
+        String sql = "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS likes_count " +
+                "FROM films f " +
+                "LEFT JOIN film_likes l ON f.film_id = l.film_id " + // Исправлено на film_id
+                "JOIN mpa m ON f.mpa_id = m.mpa_id " + // Исправлено на m.mpa_id
+                "GROUP BY f.film_id " + // Исправлено на film_id
+                "ORDER BY likes_count DESC " +
+                "LIMIT ?";
         return jdbcTemplate.query(sql, this::mapRowToFilm, count);
     }
 

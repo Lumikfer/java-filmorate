@@ -20,11 +20,9 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Collection<Mpa> getAllMpa() {
-
-        String sql = "SELECT * FROM mpa";
+        String sql = "SELECT * FROM mpa ORDER BY mpa_id ASC"; // Добавлена сортировка
         return jdbcTemplate.query(sql, this::mapRowToMpa);
     }
-
     @Override
     public Mpa getMpaById(Integer id) {
         log.debug("Fetching MPA with id: {}", id);

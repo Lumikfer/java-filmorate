@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Repository
@@ -23,8 +24,7 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Collection<Genre> getAllGenres() {
-
-        String sql = "SELECT * FROM genres";
+        String sql = "SELECT * FROM genres ORDER BY genre_id ASC"; // Добавлена сортировка
         return jdbcTemplate.query(sql, this::mapRowToGenre);
     }
 
@@ -44,11 +44,11 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Set<Genre> getFilmGenres(int filmId) {
-
         String sql = "SELECT g.* FROM film_genres fg " +
                 "JOIN genres g ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id = ?";
-        return new HashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
+                "WHERE fg.film_id = ? " +
+                "ORDER BY g.genre_id ASC"; // Добавлена сортировка
+        return new LinkedHashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
     }
 
     private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {

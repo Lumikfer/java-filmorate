@@ -49,8 +49,10 @@ CREATE TABLE IF NOT EXISTS film_genres (
     PRIMARY KEY (film_id, genre_id)
 );
 
-CREATE TABLE IF NOT EXISTS film_likes (
-    film_id INT NOT NULL REFERENCES films(film_id) ON DELETE CASCADE,  -- Исправлено
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,  -- Исправлено
-    PRIMARY KEY (film_id, user_id)
+CREATE TABLE film_likes (
+    film_id INT NOT NULL,
+    user_id INT NOT NULL,
+    PRIMARY KEY (film_id, user_id),
+    FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
