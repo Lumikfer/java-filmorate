@@ -70,11 +70,10 @@ public class UserService {
 
     public List<User> getFriendByIdUser(int id) {
         List<User> friends = new ArrayList<>();
-        for (User user :userStorage.getFriends(id)) {
+        for (User user : userStorage.getFriends(id)) {
             if (user == null) {
                 throw new NotFoundException("User not found with id: " + id);
-            }
-            else {
+            } else {
                 friends.add(user);
             }
         }
