@@ -5,6 +5,7 @@ INSERT INTO mpa (name) VALUES
 ('R'),
 ('NC-17');
 
+COMMIT;
 
 INSERT INTO genres (name) VALUES
 ('Комедия'),
@@ -14,4 +15,4 @@ INSERT INTO genres (name) VALUES
 ('Документальный'),
 ('Боевик');
 
-
+COMMIT;

@@ -26,12 +26,15 @@ public class MpaDbStorage implements MpaStorage {
     }
 
     @Override
-    public Mpa getMpaById(int id) {
+    public Mpa getMpaById(Integer id) {
+        log.debug("Fetching MPA with id: {}", id);
         try {
             String sql = "SELECT mpa_id, name FROM mpa WHERE mpa_id = ?";
-            return jdbcTemplate.queryForObject(sql, this::mapRowToMpa, id);
+            Mpa mpa = jdbcTemplate.queryForObject(sql, this::mapRowToMpa, id);
+            log.debug("Found MPA: {}", mpa);
+            return mpa;
         } catch (EmptyResultDataAccessException e) {
-            log.info("mpa");
+            log.error("MPA not found. ID: {}", id);
             throw new NotFoundException("MPA not found with id: " + id);
         }
     }

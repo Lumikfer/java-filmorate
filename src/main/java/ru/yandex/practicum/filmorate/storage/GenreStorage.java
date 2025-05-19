@@ -9,7 +9,7 @@ public interface GenreStorage {
 
     Collection<Genre> getAllGenres();
 
-    Genre getGenreById(int id);
+    Genre getGenreById(Integer id);
 
     Set<Genre> getFilmGenres(int filmId);
 }

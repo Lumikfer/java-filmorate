@@ -29,12 +29,15 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public Genre getGenreById(int id) {
+    public Genre getGenreById(Integer id) {
+        log.debug("Fetching genre with id: {}", id);
         try {
-            String sql = "SELECT * FROM genres WHERE genre_id = ?";
-            return jdbcTemplate.queryForObject(sql, this::mapRowToGenre, id);
+            String sql = "SELECT genre_id, name FROM genres WHERE genre_id = ?";
+            Genre genre = jdbcTemplate.queryForObject(sql, this::mapRowToGenre, id);
+            log.debug("Found genre: {}", genre);
+            return genre;
         } catch (EmptyResultDataAccessException e) {
-            log.info("genre");
+            log.error("Genre not found. ID: {}", id);
             throw new NotFoundException("Genre not found with id: " + id);
         }
     }

@@ -8,6 +8,6 @@ public interface MpaStorage {
 
     Collection<Mpa> getAllMpa();
 
-    Mpa getMpaById(int id);
+    Mpa getMpaById(Integer id);
 
 }
