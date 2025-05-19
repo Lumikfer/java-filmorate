@@ -114,6 +114,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT user_id FROM likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.queryForList(sql, Integer.class, filmId));
     }
+
     @Override
     public void deleteFilmById(int id) {
         String checkSql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
@@ -139,6 +140,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
     }
+
     @Override
     public void removeLike(int filmId, int userId) {
         jdbcTemplate.update("DELETE FROM film_likes WHERE film_id = ? AND user_id = ?", filmId, userId);
