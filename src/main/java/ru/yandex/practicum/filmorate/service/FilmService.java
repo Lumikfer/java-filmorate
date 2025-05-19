@@ -27,11 +27,10 @@ public class FilmService {
 
     public Film addFilm(Film film) {
 
-        Mpa mpa = mpaStorage.getMpaById(film.getMpa().getId());
-        if (mpa == null) {
-            throw new NotFoundException("MPA not found with id: " + film.getMpa().getId());
+        Integer mpaId = film.getMpa().getId();
+        if (mpaStorage.getMpaById(mpaId)== null) {
+            throw new NotFoundException("Mpa not found");
         }
-        film.setMpa(mpa);
 
         Set<Genre> validatedGenres = new HashSet<>();
         for (Genre genre : film.getGenres()) {
