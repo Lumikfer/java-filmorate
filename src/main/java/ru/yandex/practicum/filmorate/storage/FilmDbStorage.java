@@ -60,7 +60,6 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 film.getMpa().getId(),
                 film.getId());
-
         updateGenres(film);
         return getFilmById(film.getId());
     }
@@ -85,36 +84,32 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getFilms() {
-
         String sql = "SELECT f.*, m.name AS mpa_name " +
                 "FROM films f " +
-                "JOIN mpa m ON f.mpa_id = m.id";
-
+                "JOIN mpa m ON f.mpa_id = m.mpa_id"; // Исправлено на m.mpa_id
         return jdbcTemplate.query(sql, this::mapRowToFilm);
     }
 
     @Override
     public Film getFilmById(int id) {
-
         String sql = "SELECT f.*, m.name AS mpa_name " +
                 "FROM films f " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
-                "WHERE f.film_id = ?";
+                "WHERE f.film_id = ?"; // Исправлено на film_id
         return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
     }
 
-
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = new Film();
-        film.setId(rs.getInt("id"));
+        film.setId(rs.getInt("film_id")); // Исправлено с id на film_id
         film.setName(rs.getString("name"));
         film.setDescription(rs.getString("description"));
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
-        film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name"))); // Изменено здесь
+        film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
 
         List<Genre> genres = new ArrayList<>(genreStorage.getFilmGenres(film.getId()));
-        genres.sort(Comparator.comparingInt(Genre::getId));
+        genres.sort(Comparator.comparingInt(Genre::getId)); // Сортировка по id
         film.setGenres(genres);
 
         return film;
@@ -160,6 +155,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId, userId);
     }
 
+
     @Override
     public void removeLike(int filmId, int userId) {
 
@@ -178,6 +174,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+
     public List<Integer> getLikesForFilm(int filmId) {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
         return jdbcTemplate.queryForList(sql, Integer.class, filmId);
@@ -187,8 +184,8 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularFilms(int count) {
         String sql = "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS likes_count " +
                 "FROM films f " +
-                "LEFT JOIN film_likes l ON f.film_id = l.film_id " + // Исправлено на film_id
-                "JOIN mpa m ON f.mpa_id = m.mpa_id " + // Исправлено на m.mpa_id
+                "LEFT JOIN film_likes l ON f.film_id = l.film_id " +
+                "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 "GROUP BY f.film_id " + // Исправлено на film_id
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";

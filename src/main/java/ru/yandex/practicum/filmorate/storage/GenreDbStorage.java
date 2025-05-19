@@ -23,7 +23,7 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Collection<Genre> getAllGenres() {
-        String sql = "SELECT * FROM genres ORDER BY genre_id ASC"; // Добавлена сортировка
+        String sql = "SELECT * FROM genres ORDER BY genre_id ASC";
         return jdbcTemplate.query(sql, this::mapRowToGenre);
     }
 
@@ -46,7 +46,7 @@ public class GenreDbStorage implements GenreStorage {
         String sql = "SELECT g.* FROM film_genres fg " +
                 "JOIN genres g ON fg.genre_id = g.genre_id " +
                 "WHERE fg.film_id = ? " +
-                "ORDER BY g.genre_id ASC"; // Добавлена сортировка
+                "ORDER BY g.genre_id ASC"; // Сортировка по возрастанию genre_id
         return new LinkedHashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
     }
 
