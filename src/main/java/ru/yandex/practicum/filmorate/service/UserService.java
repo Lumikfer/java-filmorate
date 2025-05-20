@@ -26,11 +26,9 @@ public class UserService {
     public List<User> addFriend(int userId, int friendId) {
         getUserOrThrow(userId);
         getUserOrThrow(friendId);
-
-        if(userId == friendId) {
+        if (userId == friendId) {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
-
         userStorage.addFriend(userId, friendId);
         return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
     }
