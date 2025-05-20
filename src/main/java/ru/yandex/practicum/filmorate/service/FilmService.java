@@ -20,9 +20,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class FilmService {
-    @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
-    @Qualifier("userDbStorage")
     private final UserStorage userStorage;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;

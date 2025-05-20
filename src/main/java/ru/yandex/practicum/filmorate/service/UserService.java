@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
 
 
@@ -27,6 +27,10 @@ public class UserService {
     public List<User> addFriend(int userId, int friendId) {
         getUserOrThrow(userId);
         getUserOrThrow(friendId);
+
+        if(userId == friendId) {
+            throw new ValidationException("Нельзя добавить себя в друзья");
+        }
 
         userStorage.addFriend(userId, friendId);
         return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
