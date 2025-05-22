@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -14,15 +15,34 @@ public class UserService {
     private final UserStorage userStorage;
 
 
-
     public User addUser(User user) {
+
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         return userStorage.addUser(user);
     }
 
+    public List<User> addFriend(int userId, int friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+        if (userId == friendId) {
+            throw new ValidationException("Нельзя добавить себя в друзья");
+        }
+        userStorage.addFriend(userId, friendId);
+        return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
+    }
+
+    private User getUserOrThrow(int id) {
+        User user = userStorage.getUserById(id);
+        if (user == null) {
+            throw new NotFoundException("User not found with id: " + id);
+        }
+        return user;
+    }
+
     public User updateUser(User user) {
+
         getUserOrThrow(user.getId());
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
@@ -34,55 +54,43 @@ public class UserService {
         return userStorage.getUsers();
     }
 
-    public List<User> addFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
+    public List<User> approveFriend(int userId, int friendId) {
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-        user.addFriend(friendId);
-        friend.addFriend(userId);
+        if (userStorage.getUserById(userId).getFriends().contains(friendId)) {
+            addFriend(userId, friendId);
+            userStorage.updateUser(userStorage.getUserById(userId));
+            userStorage.updateUser(userStorage.getUserById(friendId));
+            return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
+        }
+        return List.of(userStorage.getUserById(userId));
+    }
 
-        userStorage.updateUser(user);
-        userStorage.updateUser(friend);
-
-        return List.of(user, friend);
+    public void deleteUserById(int id) {
+        userStorage.deleteUserById(id);
     }
 
     public List<User> getFriendByIdUser(int id) {
-        User user = getUserOrThrow(id);
-        return user.getFriends().stream()
-                .map(friendId -> {
-                    try {
-                        return userStorage.getUserById(friendId);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        getUserOrThrow(id);
+        List<User> friends = new ArrayList<>();
+        for (User user : userStorage.getFriends(id)) {
+            if (user == null) {
+                throw new NotFoundException("User not found with id: " + id);
+            } else {
+                friends.add(user);
+            }
+        }
+        return friends;
     }
 
     public List<User> getMutualFriends(int id1, int id2) {
-        Set<Integer> friends1 = new HashSet<>(getUserOrThrow(id1).getFriends());
-        Set<Integer> friends2 = getUserOrThrow(id2).getFriends();
-
-        return friends1.stream()
-                .filter(friends2::contains)
-                .map(userStorage::getUserById)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return userStorage.getCommonFriends(id1, id2);
     }
 
     public void deleteFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+        userStorage.removeFriend(userId, friendId);
     }
 
-    private User getUserOrThrow(int id) {
-        return userStorage.getUserById(id);
-    }
+
 }

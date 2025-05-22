@@ -44,7 +44,7 @@ public class UserController {
     public List<User> getFriends(@PathVariable int id) {
         return userService.getFriendByIdUser(id).stream()
                 .map(user -> {
-                    user.setFriends(null); // Исключаем рекурсию
+                    user.setFriends(null);
                     return user;
                 })
                 .collect(Collectors.toList());
@@ -69,5 +69,11 @@ public class UserController {
             @PathVariable int friendId
     ) {
         userService.deleteFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable int id) {
+        userService.deleteUserById(id);
     }
 }
