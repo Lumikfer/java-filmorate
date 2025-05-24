@@ -112,7 +112,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
         film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
-
+        Set<Integer> likes = getLikes(film.getId());
+        film.setLike(likes);
         List<Genre> genres = new ArrayList<>(genreStorage.getFilmGenres(film.getId()));
         genres.sort(Comparator.comparingInt(Genre::getId));
         film.setGenres(genres);
@@ -158,6 +159,7 @@ public class FilmDbStorage implements FilmStorage {
 
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
+        film.getLike().add(userId);
     }
 
 
