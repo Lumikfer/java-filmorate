@@ -4,7 +4,9 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
@@ -13,6 +15,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
 
     public User addUser(User user) {
@@ -91,6 +94,37 @@ public class UserService {
         getUserOrThrow(friendId);
         userStorage.removeFriend(userId, friendId);
     }
+
+    //рекомендации
+    public TreeMap<User,Integer> recomendation(int userId) {
+        List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
+        List<User> alluser = new ArrayList<>(userStorage.getUsers());
+        List<Film> films = new ArrayList<>();
+        Map<User,Integer> mapa = new HashMap<>();
+       for(User users:alluser) {
+          for(Film film:allfilm) {
+              if(users.getId() == userId) {
+                  continue;
+              }
+              if(film.getLike().contains(userId) && film.getLike().contains(users.getId())) {
+                  films.add(film);
+                  mapa.put(users,mapa.get(users)+1);
+              }
+          }
+       }
+
+            TreeMap<User,Integer> treeMap = new TreeMap<>();
+       treeMap.putAll(mapa);
+
+        return treeMap;
+    }
+
+    //  List<Integer> userFilms = filmStorage.getFilms().stream()
+    //                .filter(n->n.getLike().contains(userId))
+    //                .map(Film::getId)
+    //                .collect(Collectors.toList());
+    //        //ищем юзера с похожими фильмами
+    //        Lis
 
 
 }

@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.List;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @RestController
@@ -75,5 +76,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable int id) {
         userService.deleteUserById(id);
+    }
+
+    @GetMapping("/rec/{userId}")
+    public TreeMap<User,Integer> recomend(@PathVariable int userId) {
+      return   userService.recomendation(userId);
     }
 }

@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -64,6 +65,7 @@ public class FilmService {
         if (user == null) {
             throw new NotFoundException("User not found with id: " + userId);
         }
+        log.info(userId +" поставил лайк " +filmId);
         filmStorage.addLike(filmId, userId);
     }
 
@@ -99,4 +101,21 @@ public class FilmService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
     }
+//общие фильмы
+    public List<Film> getCommonFilms(int userId,int friendId) {
+        List<Film> commonFilms = new ArrayList<>();
+        List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
+        for(Film film:allfilm) {
+            if(film.getLike().contains(userId)&&film.getLike().contains(friendId)) {
+                commonFilms.add(film);
+            }
+        }
+        List<Film> sortedFilms = commonFilms.stream()
+                .sorted(Comparator.comparing(film -> film.countLike(film.getLike())))
+                .collect(Collectors.toList());
+
+        return commonFilms;
+    }
+
+
 }
