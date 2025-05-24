@@ -2,15 +2,19 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import java.util.Map.Entry;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -96,7 +100,7 @@ public class UserService {
     }
 
     //рекомендации
-    public TreeMap<User,Integer> recomendation(int userId) {
+    public List<Film> recomendation(int userId) {
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
         List<User> alluser = new ArrayList<>(userStorage.getUsers());
         List<Film> films = new ArrayList<>();
@@ -108,15 +112,34 @@ public class UserService {
               }
               if(film.getLike().contains(userId) && film.getLike().contains(users.getId())) {
                   films.add(film);
-                  mapa.put(users,mapa.get(users)+1);
+                  if(mapa.containsKey(users)) {
+                      log.info("добавлен "+users.getId());
+                      mapa.put(users, mapa.get(users) + 1);
+                  }
+                  else {
+                      mapa.put(users,1);
+                  }
               }
           }
        }
+        LinkedHashMap<User, Integer> sortedMap =
+                mapa.entrySet().stream()
+                        .sorted(Entry.comparingByValue())
+                        .collect(Collectors.toMap(entry -> entry.getKey(), // Лямбда вместо Map.Entry::getKey
+                                entry -> entry.getValue(),
+                                (e1, e2) -> e1, LinkedHashMap::new));
 
-            TreeMap<User,Integer> treeMap = new TreeMap<>();
-       treeMap.putAll(mapa);
+       User recuser = sortedMap.firstEntry().getKey();
+       for(Film film:allfilm) {
+           if(film.getLike().contains(recuser.getId())&&!film.getLike().contains(userId)) {
+               films.add(film);
+           }
+       }
 
-        return treeMap;
+
+
+
+        return films;
     }
 
     //  List<Integer> userFilms = filmStorage.getFilms().stream()
