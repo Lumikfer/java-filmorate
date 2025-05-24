@@ -19,7 +19,6 @@ public class Film {
     @Size(max = 200, message = "Description cannot be longer than 200 characters")
     private String description;
 
-
     @PastOrPresent
     private LocalDate releaseDate;
 
@@ -31,4 +30,8 @@ public class Film {
     private Mpa mpa;
 
     private Set<Integer> like = new HashSet<>();
+
+    public Integer countLike (Set<Integer> like) {
+        return like.size();
+    }
 }
