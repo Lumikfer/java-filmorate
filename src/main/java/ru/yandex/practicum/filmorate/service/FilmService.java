@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -83,8 +84,8 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopularFilms(int count) {
-        return filmStorage.getPopularFilms(count);
+    public List<Film> getPopularFilms(int count, int year, int genreId) {
+        return filmStorage.getPopularFilms(count, year, genreId);
     }
 
     private void validateFilm(Film film) {
@@ -92,7 +93,6 @@ public class FilmService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Release date must be after 1895-12-28");
         }
     }
-
 
     private User getUserOrThrow(int id) {
         try {
@@ -116,6 +116,4 @@ public class FilmService {
 
         return commonFilms;
     }
-
-
 }

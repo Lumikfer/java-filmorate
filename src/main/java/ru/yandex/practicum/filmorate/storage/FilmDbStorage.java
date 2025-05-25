@@ -12,10 +12,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 @Repository
@@ -188,15 +186,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS likes_count " +
+    public List<Film> getPopularFilms(int count, int year, int genreId) {
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
                 "FROM films f " +
-                "LEFT JOIN film_likes l ON f.film_id = l.film_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? " +
                 "GROUP BY f.film_id " +
-                "ORDER BY likes_count DESC " +
+                "ORDER BY COUNT(fl.user_id) DESC " +
                 "LIMIT ?";
-        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
-    }
 
+        return jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
+    }
 }
