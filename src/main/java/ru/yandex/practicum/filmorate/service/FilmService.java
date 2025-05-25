@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
@@ -24,6 +25,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
 
     public Film addFilm(Film film) {
@@ -38,13 +40,18 @@ public class FilmService {
             validatedGenres.add(genreStorage.getGenreById(genre.getId()));
         }
         film.setGenres(new ArrayList<>(validatedGenres));
+        Set<Director> validateDirector = new LinkedHashSet<>();
+        for (Director director : film.getDirector()) {
+            validateDirector.add(directorStorage.getDirectorById(director.getId()));
+        }
+        film.setDirector(new ArrayList<>(validateDirector));
         return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
         validateFilm(film);
         Film film1 = getFilmOrThrow(film.getId());
-        return  filmStorage.updateFilm(film);
+        return filmStorage.updateFilm(film);
     }
 
     public Collection<Film> getFilms() {
@@ -65,7 +72,7 @@ public class FilmService {
         if (user == null) {
             throw new NotFoundException("User not found with id: " + userId);
         }
-        log.info(userId +" поставил лайк " +filmId);
+        log.info(userId + " поставил лайк " + filmId);
         filmStorage.addLike(filmId, userId);
     }
 
@@ -96,17 +103,18 @@ public class FilmService {
 
     private User getUserOrThrow(int id) {
         try {
-          return   userStorage.getUserById(id);
+            return userStorage.getUserById(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
     }
-//общие фильмы
-    public List<Film> getCommonFilms(int userId,int friendId) {
+
+    //общие фильмы
+    public List<Film> getCommonFilms(int userId, int friendId) {
         List<Film> commonFilms = new ArrayList<>();
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
-        for(Film film:allfilm) {
-            if(film.getLike().contains(userId)&&film.getLike().contains(friendId)) {
+        for (Film film : allfilm) {
+            if (film.getLike().contains(userId) && film.getLike().contains(friendId)) {
                 commonFilms.add(film);
             }
         }
@@ -115,6 +123,12 @@ public class FilmService {
                 .collect(Collectors.toList());
 
         return commonFilms;
+    }
+
+
+    public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
+     log.debug("Получение фильмов режиссера с ID: {} с сортировкой по '{}'", directorId, sortBy);
+        return filmStorage.getFilmsByDirectorId(directorId, sortBy);
     }
 
 

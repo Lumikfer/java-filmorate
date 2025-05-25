@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -61,8 +62,16 @@ public class FilmController {
     public void deleteFilm(@PathVariable int id) {
         filmService.deleteFilmById(id);
     }
+
     @GetMapping("/common/{userId}/{friendId}")
-    public List<Film> getCommonFilm(@PathVariable int userId,@PathVariable int friendId) {
-      return   filmService.getCommonFilms(userId,friendId);
+    public List<Film> getCommonFilm(@PathVariable int userId, @PathVariable int friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable int directorId,
+                                         @RequestParam(name = "sortBy", defaultValue = "year") String sortBy) {
+        return filmService.getFilmsByDirectorId(directorId, sortBy);
     }
 }

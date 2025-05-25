@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -26,6 +27,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
 
     @Override
     public Film addFilm(Film film) {
@@ -117,6 +119,9 @@ public class FilmDbStorage implements FilmStorage {
         List<Genre> genres = new ArrayList<>(genreStorage.getFilmGenres(film.getId()));
         genres.sort(Comparator.comparingInt(Genre::getId));
         film.setGenres(genres);
+        List<Director> directors = new ArrayList<>(directorStorage.getDirectorsByFilmId(film.getId()));
+        directors.sort(Comparator.comparingInt(Director::getId));
+        film.setDirector(directors);
 
         return film;
     }
@@ -197,6 +202,51 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sql, this::mapRowToFilm, count);
+    }
+
+
+    public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
+
+        String orderByClause;
+        switch (sortBy.toLowerCase()) {
+            case "year":
+                orderByClause = "f.release_date";
+                break;
+            case "likes":
+                orderByClause = "like_count";
+                break;
+            default:
+                throw new IllegalArgumentException("Неподдерживаемый параметр сортировки: " + sortBy);
+        }
+
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "f.mpa_id, m.name AS mpa_name, " +
+                "COUNT(l.user_id) AS like_count " +
+                "FROM films f " +
+                "JOIN film_directors fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN film_likes l ON f.film_id = l.film_id " +
+                "JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "WHERE fd.director_id = ? " +
+                "GROUP BY f.film_id, m.name " +
+                "ORDER BY " + orderByClause + " DESC";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToFilmWithLikeCount(rs), directorId);
+    }
+
+
+    private Film mapRowToFilmWithLikeCount(ResultSet rs) throws SQLException {
+        Film film = new Film();
+        film.setId(rs.getInt("film_id"));
+        film.setName(rs.getString("name"));
+        film.setDescription(rs.getString("description"));
+        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+        film.setDuration(rs.getInt("duration"));
+        film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
+        film.setGenres(new ArrayList<>(genreStorage.getFilmGenres(film.getId())));
+        film.setDirector(directorStorage.getDirectorsByFilmId(film.getId()));
+        Set<Integer> likes = getLikes(film.getId());
+        film.setLike(likes);
+        return film;
     }
 
 }

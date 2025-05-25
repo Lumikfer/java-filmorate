@@ -29,6 +29,8 @@ public class Film {
 
     private Mpa mpa;
 
+    private List<Director> director = new ArrayList<>();
+
     private Set<Integer> like = new HashSet<>();
 
     public Integer countLike (Set<Integer> like) {
