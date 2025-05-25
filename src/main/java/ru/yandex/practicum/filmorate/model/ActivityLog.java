@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -9,15 +8,10 @@ import java.time.LocalDateTime;
 public class ActivityLog {
 
     private int activityId;
-    @NotNull
     private int userId;
-    @NotNull
     private String actionType;
-    @NotNull
     private String operation;
-    @NotNull
     private int targetId;
-    @NotNull
     private LocalDateTime created;
 
 
