@@ -11,6 +11,7 @@ import java.util.Set;
 
 @Data
 public class Film {
+
     private int id;
 
     @NotBlank(message = "Name cannot be blank")
@@ -36,4 +37,5 @@ public class Film {
     public Integer countLike (Set<Integer> like) {
         return like.size();
     }
+
 }

@@ -66,7 +66,6 @@ public class FilmController {
     @GetMapping("/common/{userId}/{friendId}")
     public List<Film> getCommonFilm(@PathVariable int userId, @PathVariable int friendId) {
         return filmService.getCommonFilms(userId, friendId);
-
     }
 
     @GetMapping("/director/{directorId}")

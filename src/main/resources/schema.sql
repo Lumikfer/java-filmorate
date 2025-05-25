@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS film_genres (
     PRIMARY KEY (film_id, genre_id)
 );
 
-CREATE TABLE film_likes (
+CREATE TABLE IF NOT EXISTS film_likes (
     film_id INT NOT NULL,
     user_id INT NOT NULL,
     PRIMARY KEY (film_id, user_id),
