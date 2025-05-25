@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.ActivityLog;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.ActivityLogStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Map.Entry;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final ActivityLogStorage activityLogStorage;
 
 
     public User addUser(User user) {
@@ -37,6 +40,7 @@ public class UserService {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
         userStorage.addFriend(userId, friendId);
+        activityLogStorage.addActivity(userId, "FRIEND", "ADD", friendId);
         return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
     }
 
@@ -97,6 +101,7 @@ public class UserService {
         getUserOrThrow(userId);
         getUserOrThrow(friendId);
         userStorage.removeFriend(userId, friendId);
+        activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
     }
 
     //рекомендации
@@ -136,11 +141,17 @@ public class UserService {
            }
        }
 
-
-
-
         return films;
     }
+
+    public List<ActivityLog> getActivityLogForUserId(int id) {
+        User user = userStorage.getUserById(id);
+        if (user == null) {
+            throw new NotFoundException("User not found with id: " + id);
+        }
+        return activityLogStorage.getFeedForUser(id);
+    }
+
 
     //  List<Integer> userFilms = filmStorage.getFilms().stream()
     //                .filter(n->n.getLike().contains(userId))

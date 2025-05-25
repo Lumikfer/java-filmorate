@@ -42,7 +42,7 @@ public class ActivityLogDbStorage implements ActivityLogStorage {
         String sql = "SELECT activity_id, user_id, action_type, operation, target_id, created " +
                 "FROM activity_log " +
                 "WHERE user_id = ? " +
-                "ORDER BY created DESC";
+                "ORDER BY activity_id DESC";
 
         return jdbcTemplate.query(sql, this::mapRowToActivityLog, userId);
     }
