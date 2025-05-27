@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Director {
 
-    @NotBlank
     private Integer id;
     @NotBlank
     @NotNull
