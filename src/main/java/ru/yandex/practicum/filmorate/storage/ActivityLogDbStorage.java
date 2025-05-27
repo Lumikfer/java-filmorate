@@ -48,7 +48,7 @@ public class ActivityLogDbStorage implements ActivityLogStorage {
     }
 
     private ActivityLog mapRowToActivityLog(ResultSet rs, int rowNum) throws SQLException {
-        return new ActivityLog (
+        return new ActivityLog(
                 rs.getInt("activity_id"),
                 rs.getInt("user_id"),
                 rs.getString("action_type"),

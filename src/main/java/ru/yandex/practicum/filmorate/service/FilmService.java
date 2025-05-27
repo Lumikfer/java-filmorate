@@ -33,6 +33,7 @@ public class FilmService {
         if (mpaStorage.getMpaById(mpaId) == null) {
             throw new NotFoundException("Mpa not found");
         }
+
         Set<Genre> validatedGenres = new LinkedHashSet<>();
         for (Genre genre : film.getGenres()) {
             validatedGenres.add(genreStorage.getGenreById(genre.getId()));
@@ -95,6 +96,7 @@ public class FilmService {
         }
     }
 
+
     private User getUserOrThrow(int id) {
         try {
           return userStorage.getUserById(id);
@@ -117,4 +119,6 @@ public class FilmService {
 
         return commonFilms;
     }
+
+
 }

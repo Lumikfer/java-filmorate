@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.ActivityLogStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-
 import java.util.Map.Entry;
 
 import java.util.*;
@@ -158,4 +157,6 @@ public class UserService {
     //                .collect(Collectors.toList());
     //        //ищем юзера с похожими фильмами
     //        Lis
+
+
 }
