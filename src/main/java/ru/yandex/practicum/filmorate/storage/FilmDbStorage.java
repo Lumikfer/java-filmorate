@@ -202,65 +202,11 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(fl.user_id) DESC " +
                 "LIMIT ?";
+        return jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
+    }
 
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
- 
-
-  
-  
-  
-  
-  
-  
-  
-  
-   
-
+    @Override
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
-
         String orderByClause;
         switch (sortBy.toLowerCase()) {
             case "year":
@@ -302,11 +248,4 @@ public class FilmDbStorage implements FilmStorage {
         film.setLike(likes);
         return film;
     }
-
-        return jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
-    }
-  
-  
-  
-  
-  }
+}

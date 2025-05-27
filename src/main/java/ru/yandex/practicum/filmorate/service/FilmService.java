@@ -26,7 +26,7 @@ public class FilmService {
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
-    private final ActivityLogStorage activityLogStorage;
+
 
     public Film addFilm(Film film) {
         validateFilm(film);
@@ -34,7 +34,6 @@ public class FilmService {
         if (mpaStorage.getMpaById(mpaId) == null) {
             throw new NotFoundException("Mpa not found");
         }
-
         Set<Genre> validatedGenres = new LinkedHashSet<>();
         for (Genre genre : film.getGenres()) {
             validatedGenres.add(genreStorage.getGenreById(genre.getId()));
@@ -74,14 +73,12 @@ public class FilmService {
         }
         log.info(userId + " поставил лайк " + filmId);
         filmStorage.addLike(filmId, userId);
-        activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
         getFilmOrThrow(filmId);
         getUserOrThrow(userId);
         filmStorage.removeLike(filmId, userId);
-        activityLogStorage.addActivity(userId, "LIKE", "REMOVE", filmId);
     }
 
     private Film getFilmOrThrow(int id) {
@@ -102,7 +99,6 @@ public class FilmService {
         }
     }
 
-
     private User getUserOrThrow(int id) {
         try {
             return userStorage.getUserById(id);
@@ -111,8 +107,9 @@ public class FilmService {
         }
     }
 
-    public List<Film> getCommonFilms(int userId,int friendId) {
-      List<Film> commonFilms = new ArrayList<>();
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        List<Film> commonFilms = new ArrayList<>();
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
         for (Film film : allfilm) {
             if (film.getLike().contains(userId) && film.getLike().contains(friendId)) {
@@ -130,4 +127,28 @@ public class FilmService {
         log.debug("Получение фильмов режиссера с ID: {} с сортировкой по '{}'", directorId, sortBy);
         return filmStorage.getFilmsByDirectorId(directorId, sortBy);
     }
-}
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  }
