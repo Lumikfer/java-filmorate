@@ -20,7 +20,7 @@ public class ActivityLogDbStorage implements ActivityLogStorage {
 
     @Override
     public void addActivity(int userId, String actionType, String operation, int targetId) {
-        log.info("Добавление нового события: user_id={}, action_type={}, operation={}, target_id={}",
+        log.info("Добавление нового события user_id={}, action_type={}, operation={}, target_id={}",
                 userId, actionType, operation, targetId);
 
         String sql = "INSERT INTO activity_log (user_id, action_type, operation, target_id, created) " +
