@@ -113,7 +113,7 @@ public class UserService {
               if(film.getLike().contains(userId) && film.getLike().contains(users.getId())) {
                   films.add(film);
                   if(mapa.containsKey(users)) {
-                      log.info("добавлен "+users.getId());
+                      log.info("добавлен " + users.getId());
                       mapa.put(users, mapa.get(users) + 1);
                   }
                   else {

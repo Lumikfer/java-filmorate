@@ -65,7 +65,7 @@ public class FilmService {
         if (user == null) {
             throw new NotFoundException("User not found with id: " + userId);
         }
-        log.info(userId +" поставил лайк " +filmId);
+        log.info(userId + " поставил лайк " + filmId);
         filmStorage.addLike(filmId, userId);
     }
 
