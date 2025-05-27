@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -34,7 +37,7 @@ public class Film {
 
     private Set<Integer> like = new HashSet<>();
 
-    public Integer countLike (Set<Integer> like) {
+    public Integer countLike(Set<Integer> like) {
         return like.size();
     }
 

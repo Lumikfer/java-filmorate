@@ -127,7 +127,7 @@ public class FilmService {
 
 
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
-     log.debug("Получение фильмов режиссера с ID: {} с сортировкой по '{}'", directorId, sortBy);
+        log.debug("Получение фильмов режиссера с ID: {} с сортировкой по '{}'", directorId, sortBy);
         return filmStorage.getFilmsByDirectorId(directorId, sortBy);
     }
 
