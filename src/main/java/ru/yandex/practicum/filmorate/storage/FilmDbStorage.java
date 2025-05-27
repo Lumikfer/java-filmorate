@@ -46,6 +46,7 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         updateGenres(film);
+        updateDirectors(film);
         return film;
     }
 
@@ -84,6 +85,19 @@ public class FilmDbStorage implements FilmStorage {
                     "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                     film.getId(),
                     genre.getId()
+            );
+        }
+    }
+
+    private void updateDirectors(Film film) {
+        jdbcTemplate.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
+        List<Director> directors = new ArrayList<>(film.getDirector());
+        directors.sort(Comparator.comparingInt(Director::getId));
+        for (Director director : directors) {
+            jdbcTemplate.update(
+                    "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)",
+                    film.getId(),
+                    director.getId()
             );
         }
     }
@@ -205,6 +219,7 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
     }
 
+
     @Override
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
         String orderByClause;
@@ -230,22 +245,7 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY f.film_id, m.name " +
                 "ORDER BY " + orderByClause + " DESC";
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToFilmWithLikeCount(rs), directorId);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
-
-    private Film mapRowToFilmWithLikeCount(ResultSet rs) throws SQLException {
-        Film film = new Film();
-        film.setId(rs.getInt("film_id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-        film.setDuration(rs.getInt("duration"));
-        film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
-        film.setGenres(new ArrayList<>(genreStorage.getFilmGenres(film.getId())));
-        film.setDirector(directorStorage.getDirectorsByFilmId(film.getId()));
-        Set<Integer> likes = getLikes(film.getId());
-        film.setLike(likes);
-        return film;
-    }
 }
