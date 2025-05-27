@@ -99,7 +99,7 @@ public class FilmService {
 
     private User getUserOrThrow(int id) {
         try {
-          return   userStorage.getUserById(id);
+          return userStorage.getUserById(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
@@ -108,8 +108,8 @@ public class FilmService {
     public List<Film> getCommonFilms(int userId,int friendId) {
         List<Film> commonFilms = new ArrayList<>();
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
-        for(Film film:allfilm) {
-            if(film.getLike().contains(userId)&&film.getLike().contains(friendId)) {
+        for (Film film:allfilm) {
+            if (film.getLike().contains(userId) && film.getLike().contains(friendId)) {
                 commonFilms.add(film);
             }
         }
