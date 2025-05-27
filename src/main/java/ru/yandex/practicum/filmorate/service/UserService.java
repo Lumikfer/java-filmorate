@@ -140,7 +140,6 @@ public class UserService {
                 films.add(film);
             }
         }
-
         return films;
     }
 
@@ -159,6 +158,4 @@ public class UserService {
     //                .collect(Collectors.toList());
     //        //ищем юзера с похожими фильмами
     //        Lis
-
-
 }

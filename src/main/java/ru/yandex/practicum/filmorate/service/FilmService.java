@@ -33,7 +33,6 @@ public class FilmService {
         if (mpaStorage.getMpaById(mpaId) == null) {
             throw new NotFoundException("Mpa not found");
         }
-
         Set<Genre> validatedGenres = new LinkedHashSet<>();
         for (Genre genre : film.getGenres()) {
             validatedGenres.add(genreStorage.getGenreById(genre.getId()));
@@ -66,7 +65,7 @@ public class FilmService {
         if (user == null) {
             throw new NotFoundException("User not found with id: " + userId);
         }
-        log.info(userId +" поставил лайк " +filmId);
+        log.info(userId + " поставил лайк " + filmId);
         filmStorage.addLike(filmId, userId);
         activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
     }
@@ -86,8 +85,8 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopularFilms(int count) {
-        return filmStorage.getPopularFilms(count);
+    public List<Film> getPopularFilms(int count, int year, int genreId) {
+        return filmStorage.getPopularFilms(count, year, genreId);
     }
 
     private void validateFilm(Film film) {
@@ -96,7 +95,6 @@ public class FilmService {
         }
     }
 
-
     private User getUserOrThrow(int id) {
         try {
           return userStorage.getUserById(id);
@@ -104,11 +102,11 @@ public class FilmService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
     }
-//общие фильмы
+
     public List<Film> getCommonFilms(int userId,int friendId) {
         List<Film> commonFilms = new ArrayList<>();
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
-        for (Film film:allfilm) {
+        for (Film film : allfilm) {
             if (film.getLike().contains(userId) && film.getLike().contains(friendId)) {
                 commonFilms.add(film);
             }
@@ -119,6 +117,4 @@ public class FilmService {
 
         return commonFilms;
     }
-
-
 }
