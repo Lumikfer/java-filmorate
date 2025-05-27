@@ -26,6 +26,7 @@ public class FilmService {
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
+    private final ActivityLogStorage activityLogStorage;
 
 
     public Film addFilm(Film film) {
@@ -73,12 +74,14 @@ public class FilmService {
         }
         log.info(userId + " поставил лайк " + filmId);
         filmStorage.addLike(filmId, userId);
+        activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
         getFilmOrThrow(filmId);
         getUserOrThrow(userId);
         filmStorage.removeLike(filmId, userId);
+        activityLogStorage.addActivity(userId, "LIKE", "REMOVE", filmId);
     }
 
     private Film getFilmOrThrow(int id) {
