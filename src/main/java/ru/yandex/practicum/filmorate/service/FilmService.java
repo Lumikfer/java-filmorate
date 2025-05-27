@@ -100,12 +100,12 @@ public class FilmService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
     }
-//общие фильмы
+
     public List<Film> getCommonFilms(int userId,int friendId) {
         List<Film> commonFilms = new ArrayList<>();
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
         for(Film film:allfilm) {
-            if(film.getLike().contains(userId)&&film.getLike().contains(friendId)) {
+            if(film.getLike().contains(userId) && film.getLike().contains(friendId)) {
                 commonFilms.add(film);
             }
         }
