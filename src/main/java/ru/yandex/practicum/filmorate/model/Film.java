@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,6 +14,7 @@ import java.util.Set;
 
 @Data
 public class Film {
+
     private int id;
 
     @NotBlank(message = "Name cannot be blank")
@@ -29,9 +33,12 @@ public class Film {
 
     private Mpa mpa;
 
+    private List<Director> director = new ArrayList<>();
+
     private Set<Integer> like = new HashSet<>();
 
     public Integer countLike(Set<Integer> like) {
         return like.size();
     }
+
 }

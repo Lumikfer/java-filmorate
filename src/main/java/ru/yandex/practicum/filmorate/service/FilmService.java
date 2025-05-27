@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
@@ -24,7 +25,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
-    private final ActivityLogStorage activityLogStorage;
+    private final DirectorStorage directorStorage;
 
 
     public Film addFilm(Film film) {
@@ -33,19 +34,23 @@ public class FilmService {
         if (mpaStorage.getMpaById(mpaId) == null) {
             throw new NotFoundException("Mpa not found");
         }
-
         Set<Genre> validatedGenres = new LinkedHashSet<>();
         for (Genre genre : film.getGenres()) {
             validatedGenres.add(genreStorage.getGenreById(genre.getId()));
         }
         film.setGenres(new ArrayList<>(validatedGenres));
+        Set<Director> validateDirector = new LinkedHashSet<>();
+        for (Director director : film.getDirector()) {
+            validateDirector.add(directorStorage.getDirectorById(director.getId()));
+        }
+        film.setDirector(new ArrayList<>(validateDirector));
         return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
         validateFilm(film);
         Film film1 = getFilmOrThrow(film.getId());
-        return  filmStorage.updateFilm(film);
+        return filmStorage.updateFilm(film);
     }
 
     public Collection<Film> getFilms() {
@@ -68,14 +73,12 @@ public class FilmService {
         }
         log.info(userId + " поставил лайк " + filmId);
         filmStorage.addLike(filmId, userId);
-        activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
         getFilmOrThrow(filmId);
         getUserOrThrow(userId);
         filmStorage.removeLike(filmId, userId);
-        activityLogStorage.addActivity(userId, "LIKE", "REMOVE", filmId);
     }
 
     private Film getFilmOrThrow(int id) {
@@ -96,16 +99,16 @@ public class FilmService {
         }
     }
 
-
     private User getUserOrThrow(int id) {
         try {
-          return userStorage.getUserById(id);
+            return userStorage.getUserById(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
     }
 
-    public List<Film> getCommonFilms(int userId,int friendId) {
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
         List<Film> commonFilms = new ArrayList<>();
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
         for (Film film : allfilm) {
@@ -120,5 +123,8 @@ public class FilmService {
         return commonFilms;
     }
 
-
+    public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
+        log.debug("Получение фильмов режисера с ID: {} с сортировкой по '{}'", directorId, sortBy);
+        return filmStorage.getFilmsByDirectorId(directorId, sortBy);
+    }
 }

@@ -6,6 +6,8 @@ DROP TABLE IF EXISTS films CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
 DROP TABLE IF EXISTS mpa CASCADE;
+DROP TABLE If EXISTS directors CASCADE;
+DROP TABLE If EXISTS film_directors CASCADE;
 DROP TABLE IF EXISTS activity_log CASCADE;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -56,6 +58,17 @@ CREATE TABLE IF NOT EXISTS film_likes (
     PRIMARY KEY (film_id, user_id),
     FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS directors (
+    director_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS film_directors (
+    film_id INT NOT NULL REFERENCES films(film_id) ON DELETE CASCADE,
+    director_id INT NOT NULL REFERENCES directors(director_id) ON DELETE CASCADE,
+    PRIMARY KEY (film_id, director_id)
 );
 
 CREATE TABLE IF NOT EXISTS activity_log (
