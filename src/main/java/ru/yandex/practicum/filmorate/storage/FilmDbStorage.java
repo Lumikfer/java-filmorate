@@ -65,6 +65,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId()
         );
         updateGenres(film);
+        updateDirectors(film);
         return film;
     }
 
