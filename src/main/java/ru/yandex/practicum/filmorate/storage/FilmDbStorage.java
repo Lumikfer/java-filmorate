@@ -224,7 +224,7 @@ public class FilmDbStorage implements FilmStorage {
             params.add(genreId);
             params.add(year);
         }
-          
+
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name" +
                 " AS mpa_name " +
                 "FROM films f " +
