@@ -200,7 +200,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-
     public List<Integer> getLikesForFilm(int filmId) {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
         return jdbcTemplate.queryForList(sql, Integer.class, filmId);
