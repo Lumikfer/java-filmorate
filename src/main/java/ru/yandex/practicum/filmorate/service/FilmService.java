@@ -40,10 +40,10 @@ public class FilmService {
         }
         film.setGenres(new ArrayList<>(validatedGenres));
         Set<Director> validateDirector = new LinkedHashSet<>();
-        for (Director director : film.getDirector()) {
+        for (Director director : film.getDirectors()) {
             validateDirector.add(directorStorage.getDirectorById(director.getId()));
         }
-        film.setDirector(new ArrayList<>(validateDirector));
+        film.setDirectors(new ArrayList<>(validateDirector));
         return filmStorage.addFilm(film);
     }
 

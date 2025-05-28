@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -23,7 +22,6 @@ public class Film {
     @Size(max = 200, message = "Description cannot be longer than 200 characters")
     private String description;
 
-    @PastOrPresent
     private LocalDate releaseDate;
 
     @Positive(message = "Duration must be positive")
@@ -33,7 +31,7 @@ public class Film {
 
     private Mpa mpa;
 
-    private List<Director> director = new ArrayList<>();
+    private List<Director> directors = new ArrayList<>();
 
     private Set<Integer> like = new HashSet<>();
 

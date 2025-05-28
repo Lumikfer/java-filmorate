@@ -92,7 +92,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void updateDirectors(Film film) {
         jdbcTemplate.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
-        List<Director> directors = new ArrayList<>(film.getDirector());
+        List<Director> directors = new ArrayList<>(film.getDirectors());
         directors.sort(Comparator.comparingInt(Director::getId));
         for (Director director : directors) {
             jdbcTemplate.update(
@@ -135,7 +135,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setGenres(genres);
         List<Director> directors = new ArrayList<>(directorStorage.getDirectorsByFilmId(film.getId()));
         directors.sort(Comparator.comparingInt(Director::getId));
-        film.setDirector(directors);
+        film.setDirectors(directors);
 
         return film;
     }
@@ -215,7 +215,7 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? " +
                 "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.user_id) DESC " +
+                "ORDER BY COUNT(fl.user_id) ASC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
     }
@@ -229,7 +229,7 @@ public class FilmDbStorage implements FilmStorage {
                 orderByClause = "f.release_date";
                 break;
             case "likes":
-                orderByClause = "like_count";
+                orderByClause = "like_count DESC";
                 break;
             default:
                 throw new IllegalArgumentException("Неподдерживаемый параметр сортировки: " + sortBy);
@@ -244,7 +244,7 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 "WHERE fd.director_id = ? " +
                 "GROUP BY f.film_id, m.name " +
-                "ORDER BY " + orderByClause + " DESC";
+                "ORDER BY " + orderByClause;
 
         return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
