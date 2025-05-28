@@ -221,8 +221,6 @@ public class FilmDbStorage implements FilmStorage {
         if (year != null && genreId != null) {
             newsql = "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ";
             params.clear();
-        if (year != 1 && genreId != 1) {
-            newsql = "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ";
             params.add(genreId);
             params.add(year);
         }
@@ -271,5 +269,4 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
-
 }
