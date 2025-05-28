@@ -200,19 +200,27 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-
     public List<Integer> getLikesForFilm(int filmId) {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
         return jdbcTemplate.queryForList(sql, Integer.class, filmId);
     }
 
     @Override
-    public List<Film> getPopularFilms(int count, int year, int genreId) {
+    public List<Film> getPopularFilms(int count, Integer year, Integer genreId) {
         String newsql = "";
         List<Object> params = new ArrayList<>();
 
-        if (year != 1 && genreId != 1) {
+        if (year != null) {
+            newsql = "WHERE EXTRACT(YEAR FROM f.release_date) = ? ";
+            params.add(year);
+        }
+        if (genreId != null) {
+            newsql = "WHERE fg.genre_id = ? ";
+            params.add(genreId);
+        }
+        if (year != null && genreId != null) {
             newsql = "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ";
+            params.clear();
             params.add(genreId);
             params.add(year);
         }
@@ -261,5 +269,4 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
-
 }

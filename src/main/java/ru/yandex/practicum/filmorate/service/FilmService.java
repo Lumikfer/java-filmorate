@@ -92,7 +92,7 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopularFilms(int count, int year, int genreId) {
+    public List<Film> getPopularFilms(int count, Integer year, Integer genreId) {
         return filmStorage.getPopularFilms(count, year, genreId);
     }
 
