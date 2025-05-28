@@ -46,6 +46,7 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         updateGenres(film);
+        updateDirectors(film);
         return film;
     }
 
@@ -64,6 +65,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId()
         );
         updateGenres(film);
+        updateDirectors(film);
         return film;
     }
 
@@ -84,6 +86,19 @@ public class FilmDbStorage implements FilmStorage {
                     "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                     film.getId(),
                     genre.getId()
+            );
+        }
+    }
+
+    private void updateDirectors(Film film) {
+        jdbcTemplate.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
+        List<Director> directors = new ArrayList<>(film.getDirectors());
+        directors.sort(Comparator.comparingInt(Director::getId));
+        for (Director director : directors) {
+            jdbcTemplate.update(
+                    "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)",
+                    film.getId(),
+                    director.getId()
             );
         }
     }
@@ -120,7 +135,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setGenres(genres);
         List<Director> directors = new ArrayList<>(directorStorage.getDirectorsByFilmId(film.getId()));
         directors.sort(Comparator.comparingInt(Director::getId));
-        film.setDirector(directors);
+        film.setDirectors(directors);
 
         return film;
     }
@@ -193,17 +208,31 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count, int year, int genreId) {
-        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name AS mpa_name " +
+        String newsql = "";
+        List<Object> params = new ArrayList<>();
+
+        if (year != 1 && genreId != 1) {
+            newsql = "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ";
+            params.add(genreId);
+            params.add(year);
+        }
+
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name" +
+                " AS mpa_name " +
                 "FROM films f " +
                 "JOIN film_genres fg ON f.film_id = fg.film_id " +
                 "JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
-                "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? " +
+                newsql +
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(fl.user_id) DESC " +
                 "LIMIT ?";
-        return jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
+
+        params.add(count);
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm, params.toArray());
     }
+
 
     @Override
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
@@ -213,7 +242,7 @@ public class FilmDbStorage implements FilmStorage {
                 orderByClause = "f.release_date";
                 break;
             case "likes":
-                orderByClause = "like_count";
+                orderByClause = "like_count DESC";
                 break;
             default:
                 throw new IllegalArgumentException("Неподдерживаемый параметр сортировки: " + sortBy);
@@ -228,24 +257,9 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 "WHERE fd.director_id = ? " +
                 "GROUP BY f.film_id, m.name " +
-                "ORDER BY " + orderByClause + " DESC";
+                "ORDER BY " + orderByClause;
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToFilmWithLikeCount(rs), directorId);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
-
-    private Film mapRowToFilmWithLikeCount(ResultSet rs) throws SQLException {
-        Film film = new Film();
-        film.setId(rs.getInt("film_id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-        film.setDuration(rs.getInt("duration"));
-        film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
-        film.setGenres(new ArrayList<>(genreStorage.getFilmGenres(film.getId())));
-        film.setDirector(directorStorage.getDirectorsByFilmId(film.getId()));
-        Set<Integer> likes = getLikes(film.getId());
-        film.setLike(likes);
-        return film;
-    }
 }
