@@ -6,26 +6,18 @@ import lombok.Data;
 @Data
 @Builder
 public class Reviews {
-
     Integer id;
     String content;
     Boolean isPositive;
     int userId;
     int filmId;
-    Integer useFul;
+    int useful;
 
-    public Integer plusUseFul(Integer useFul) {
-        useFul++;
-
-        return useFul;
-
+    public void incrementUseful() {
+        this.useful++;
     }
 
-    public Integer minusUseFul(Integer useFul) {
-        useFul--;
-
-        return useFul;
+    public void decrementUseful() {
+        this.useful--;
     }
-
-
 }

@@ -1,79 +1,116 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Reviews;
 import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewsDBStorage;
+import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class ReviewsService {
-
     private final ReviewsDBStorage reviewsDBStorage;
+    private final UserDbStorage userDbStorage;
     private final FilmDbStorage filmDbStorage;
 
-    public void addRew(Reviews rew) {
-        reviewsDBStorage.addRew(rew);
+    public Reviews createReview(Reviews review) {
+        validateUserAndFilm(review.getUserId(), review.getFilmId());
+        review.setUseful(0);
+        reviewsDBStorage.addRew(review);
+        return review;
     }
 
-    public void getRewById(int id) {
-        reviewsDBStorage.getRewById(id);
-
+    public Reviews updateReview(Reviews review) {
+        validateReviewExists(review.getId());
+        Reviews existing = reviewsDBStorage.getRewById(review.getId());
+        existing.setContent(review.getContent());
+        existing.setIsPositive(review.getIsPositive());
+        reviewsDBStorage.updateRew(existing);
+        return existing;
     }
 
-    public void getAllRew() {
-        reviewsDBStorage.getRew();
+    public void deleteReview(int id) {
+        Reviews review = reviewsDBStorage.getRewById(id);
+        if (review == null) {
+            throw new NotFoundException("Review not found");
+        }
+        reviewsDBStorage.delRewById(review);
     }
 
-    public void setLike(int rewid, int userid) {
-        Reviews rew = reviewsDBStorage.getRewById(rewid);
-        rew.plusUseFul(1);
-        reviewsDBStorage.updateRew(rew);
-        reviewsDBStorage.addUseful(rewid, userid);
+    public Reviews getReviewById(int id) {
+        Reviews review = reviewsDBStorage.getRewById(id);
+        if (review == null) {
+            throw new NotFoundException("Review not found");
+        }
+        return review;
     }
 
-    public void delLike(int rewid, int userid) {
-        Reviews rew = reviewsDBStorage.getRewById(rewid);
-        rew.minusUseFul(1);
-        reviewsDBStorage.updateRew(rew);
-        reviewsDBStorage.delUseful(rewid, userid);
-    }
+    public List<Reviews> getPopularReviews(Integer filmId, int count) {
+        if (filmId != null) {
 
-    public void updateRew(Reviews rew) {
-        reviewsDBStorage.updateRew(rew);
-    }
-
-    public List<Reviews> getPop(int count, Integer id) {
-        if (id == null) {
-            List<Film> films = filmDbStorage.getFilms().stream().collect(Collectors.toList());
-            for (Film film : films) {
-                List<List<Reviews>> rews = new ArrayList<>();
-                for (int i = 0; i < count; i++) {
-                    rews.add(reviewsDBStorage.getReviewsByFilmId(film.getId()));
-
-                }
-                List<Reviews> reviews = rews.stream().flatMap(List::stream).collect(Collectors.toList());
-                return reviews;
-
+            if (filmDbStorage.getFilmById(filmId) == null) {
+                throw new NotFoundException("Film not found");
             }
-
-        } else {
-            List<Reviews> rews = new ArrayList<>();
-            for (int i = 0; i < count - 1; i++) {
-                rews.add(reviewsDBStorage.getReviewsByFilmId(id).get(i));
-            }
-            return rews;
+            return reviewsDBStorage.getReviewsByFilmId(filmId)
+                    .stream()
+                    .sorted(Comparator.comparingInt(Reviews::getUseful).reversed())
+                    .limit(count)
+                    .collect(Collectors.toList());
         }
 
-        return new ArrayList<>();
+
+        return reviewsDBStorage.getRew()
+                .stream()
+                .sorted(Comparator.comparingInt(Reviews::getUseful).reversed())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
+    public void addLike(int reviewId, int userId) {
+        validateReviewAndUser(reviewId, userId);
+        reviewsDBStorage.addUseful(reviewId, userId);
+    }
 
+    public void removeLike(int reviewId, int userId) {
+        validateReviewAndUser(reviewId, userId);
+        reviewsDBStorage.delUseful(reviewId, userId);
+    }
+
+    public void addDislike(int reviewId, int userId) {
+
+        removeLike(reviewId, userId);
+    }
+
+    public void removeDislike(int reviewId, int userId) {
+
+        addLike(reviewId, userId);
+    }
+
+    private void validateUserAndFilm(int userId, int filmId) {
+        if (userDbStorage.getUserById(userId) == null) {
+            throw new NotFoundException("User not found");
+        }
+        if (filmDbStorage.getFilmById(filmId) == null) {
+            throw new NotFoundException("Film not found");
+        }
+    }
+
+    private void validateReviewExists(int id) {
+        if (reviewsDBStorage.getRewById(id) == null) {
+            throw new NotFoundException("Review not found");
+        }
+    }
+
+    private void validateReviewAndUser(int reviewId, int userId) {
+        validateReviewExists(reviewId);
+        if (userDbStorage.getUserById(userId) == null) {
+            throw new NotFoundException("User not found");
+        }
+    }
 }
