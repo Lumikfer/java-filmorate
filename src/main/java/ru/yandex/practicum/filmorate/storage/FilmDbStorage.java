@@ -197,4 +197,11 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapRowToFilm, count);
     }
 
+    @Override
+    public List<Film> searchFilm(String string) {
+
+        return List.of();
+    }
+
+
 }
