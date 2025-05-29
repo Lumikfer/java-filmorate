@@ -32,41 +32,41 @@ public class ReviewsService {
         reviewsDBStorage.getRew();
     }
 
-    public void setLike(int rewid,int userid) {
-      Reviews rew =  reviewsDBStorage.getRewById(rewid);
-        reviewsDBStorage.addUseful(rewid,userid);
+    public void setLike(int rewid, int userid) {
+        Reviews rew = reviewsDBStorage.getRewById(rewid);
+        reviewsDBStorage.addUseful(rewid, userid);
     }
 
-    public void delLike(int rewid,int userid) {
-        reviewsDBStorage.delUseful(rewid,userid);
+    public void delLike(int rewid, int userid) {
+        reviewsDBStorage.delUseful(rewid, userid);
     }
 
     public void updateRew(Reviews rew) {
         reviewsDBStorage.updateRew(rew);
     }
 
-    public List<Reviews> getPop(int count , Integer id) {
-        if(id == null) {
-           List<Film> films = filmDbStorage.getFilms().stream()
-                   .collect(Collectors.toList());
-           for(Film film:films) {
-              List< List<Reviews>> rews = new ArrayList<>();
-               for(int i = 0;i<count;i++) {
-                   rews.add(reviewsDBStorage.getReviewsByFilmId(film.getId()));
+    public List<Reviews> getPop(int count, Integer id) {
+        if (id == null) {
+            List<Film> films = filmDbStorage.getFilms().stream()
+                    .collect(Collectors.toList());
+            for (Film film : films) {
+                List<List<Reviews>> rews = new ArrayList<>();
+                for (int i = 0; i < count; i++) {
+                    rews.add(reviewsDBStorage.getReviewsByFilmId(film.getId()));
 
-               }
-              List<Reviews> reviews = rews.stream()
-                       .flatMap(List::stream)
-                       .collect(Collectors.toList());
-               return reviews;
+                }
+                List<Reviews> reviews = rews.stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+                return reviews;
 
-           }
+            }
 
-        }else {
+        } else {
             List<Reviews> rews = new ArrayList<>();
-        for(int i = 0 ;i<count-1;i++) {
-            rews.add(reviewsDBStorage.getReviewsByFilmId(id).get(i));
-        }
+            for (int i = 0; i < count - 1; i++) {
+                rews.add(reviewsDBStorage.getReviewsByFilmId(id).get(i));
+            }
             return rews;
         }
 
