@@ -44,7 +44,7 @@ public class UserService {
         return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
     }
 
-    private User getUserOrThrow(int id) {
+    public User getUserOrThrow(int id) {
         User user = userStorage.getUserById(id);
         if (user == null) {
             throw new NotFoundException("User not found with id: " + id);
@@ -149,14 +149,4 @@ public class UserService {
         }
         return activityLogStorage.getFeedForUser(id);
     }
-
-
-    //  List<Integer> userFilms = filmStorage.getFilms().stream()
-    //                .filter(n->n.getLike().contains(userId))
-    //                .map(Film::getId)
-    //                .collect(Collectors.toList());
-    //        //ищем юзера с похожими фильмами
-    //        Lis
-
-
 }
