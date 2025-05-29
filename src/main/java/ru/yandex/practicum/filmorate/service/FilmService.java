@@ -73,7 +73,7 @@ public class FilmService {
             throw new NotFoundException("User not found with id: " + userId);
         }
 
-        log.info(userId +" поставил лайк " +filmId);
+        log.info(userId + " поставил лайк " + filmId);
         log.info(userId + " поставил лайк " + filmId);
 
         filmStorage.addLike(filmId, userId);
@@ -130,8 +130,6 @@ public class FilmService {
 
         return commonFilms;
     }
-
-
 
 
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
