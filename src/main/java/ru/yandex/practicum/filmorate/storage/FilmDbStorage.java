@@ -117,7 +117,11 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films f " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 "WHERE f.film_id = ?";
-        return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
+        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, id);
+        if (films.isEmpty()) {
+            throw new NotFoundException("Такого фильма нет");
+        }
+        return films.getFirst();
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
@@ -229,7 +233,7 @@ public class FilmDbStorage implements FilmStorage {
                 " AS mpa_name " +
                 "FROM films f " +
                 "JOIN film_genres fg ON f.film_id = fg.film_id " +
-                "JOIN film_likes fl ON f.film_id = fl.film_id " +
+                "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 newsql +
                 "GROUP BY f.film_id " +

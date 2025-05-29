@@ -51,7 +51,7 @@ public class UserService {
         return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
     }
 
-    private User getUserOrThrow(int id) {
+    public User getUserOrThrow(int id) {
         User user = userStorage.getUserById(id);
         if (user == null) {
             throw new NotFoundException("User not found with id: " + id);

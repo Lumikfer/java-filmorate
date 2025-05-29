@@ -88,4 +88,9 @@ public class UserController {
     public List<ActivityLog> getActivityLogForUserId(@PathVariable int id) {
         return userService.getActivityLogForUserId(id);
     }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable int id) {
+        return userService.getUserOrThrow(id);
+    }
 }
