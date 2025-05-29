@@ -5,8 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+
+import ru.yandex.practicum.filmorate.model.ActivityLog;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.ActivityLogStorage;
+
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Map.Entry;
@@ -20,6 +27,9 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+
+    private final ActivityLogStorage activityLogStorage;
+
 
 
     public User addUser(User user) {
@@ -37,6 +47,7 @@ public class UserService {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
         userStorage.addFriend(userId, friendId);
+        activityLogStorage.addActivity(userId, "FRIEND", "ADD", friendId);
         return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
     }
 
@@ -97,6 +108,7 @@ public class UserService {
         getUserOrThrow(userId);
         getUserOrThrow(friendId);
         userStorage.removeFriend(userId, friendId);
+        activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
     }
 
     //рекомендации
@@ -104,6 +116,7 @@ public class UserService {
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
         List<User> alluser = new ArrayList<>(userStorage.getUsers());
         List<Film> films = new ArrayList<>();
+
         Map<User,Integer> mapa = new HashMap<>();
        for(User users:alluser) {
           for(Film film:allfilm) {
@@ -122,12 +135,32 @@ public class UserService {
               }
           }
        }
+
+        Map<User, Integer> mapa = new HashMap<>();
+        for (User users : alluser) {
+            for (Film film : allfilm) {
+                if (users.getId() == userId) {
+                    continue;
+                }
+                if (film.getLike().contains(userId) && film.getLike().contains(users.getId())) {
+                    films.add(film);
+                    if (mapa.containsKey(users)) {
+                        log.info("добавлен " + users.getId());
+                        mapa.put(users, mapa.get(users) + 1);
+                    } else {
+                        mapa.put(users, 1);
+                    }
+                }
+            }
+        }
+
         LinkedHashMap<User, Integer> sortedMap =
                 mapa.entrySet().stream()
                         .sorted(Entry.comparingByValue())
                         .collect(Collectors.toMap(entry -> entry.getKey(), // Лямбда вместо Map.Entry::getKey
                                 entry -> entry.getValue(),
                                 (e1, e2) -> e1, LinkedHashMap::new));
+
 
        User recuser = sortedMap.firstEntry().getKey();
        for(Film film:allfilm) {
@@ -142,12 +175,22 @@ public class UserService {
         return films;
     }
 
-    //  List<Integer> userFilms = filmStorage.getFilms().stream()
-    //                .filter(n->n.getLike().contains(userId))
-    //                .map(Film::getId)
-    //                .collect(Collectors.toList());
-    //        //ищем юзера с похожими фильмами
-    //        Lis
 
+        User recuser = sortedMap.firstEntry().getKey();
+        for (Film film : allfilm) {
+            if (film.getLike().contains(recuser.getId()) && !film.getLike().contains(userId)) {
+                films.add(film);
+            }
+        }
+        return films;
+    }
+
+    public List<ActivityLog> getActivityLogForUserId(int id) {
+        User user = userStorage.getUserById(id);
+        if (user == null) {
+            throw new NotFoundException("User not found with id: " + id);
+        }
+        return activityLogStorage.getFeedForUser(id);
+    }
 
 }
