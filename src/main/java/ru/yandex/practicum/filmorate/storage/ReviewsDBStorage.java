@@ -43,7 +43,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
             stmt.setBoolean(2, reviews.getIsPositive());
             stmt.setInt(3, reviews.getUserId());
             stmt.setInt(4, reviews.getFilmId());
-            stmt.setInt(5, reviews.getUseFul());
+            stmt.setInt(5, 0);
             return stmt;
         }, keyHolder);
 

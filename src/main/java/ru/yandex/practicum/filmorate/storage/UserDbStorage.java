@@ -91,9 +91,11 @@ public class UserDbStorage implements UserStorage {
 
 
     public void removeFriend(int userId, int friendId) {
-
         String sql = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
         int rowsDeleted = jdbcTemplate.update(sql, userId, friendId);
+        if (rowsDeleted == 0) {
+            throw new NotFoundException("----");
+        }
     }
 
     @Override

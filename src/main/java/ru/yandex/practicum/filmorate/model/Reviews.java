@@ -14,18 +14,16 @@ public class Reviews {
     int filmId;
     Integer useFul;
 
-    public Integer sUseFul(Boolean isPositive, Integer useFul) {
-        if (isPositive == true) {
+    public Integer plusUseFul(Integer useFul) {
             useFul++;
-        }
+
         return useFul;
 
     }
 
-    public Integer dUseFul(Boolean isPositive, Integer useFul) {
-        if (isPositive == false) {
+    public Integer minusUseFul( Integer useFul) {
             useFul--;
-        }
+
         return useFul;
     }
 

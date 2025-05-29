@@ -5,13 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-
 import ru.yandex.practicum.filmorate.model.ActivityLog;
 import ru.yandex.practicum.filmorate.storage.ActivityLogStorage;
-
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Map.Entry;
@@ -103,10 +100,14 @@ public class UserService {
     }
 
     public void deleteFriend(int userId, int friendId) {
-        getUserOrThrow(userId);
-        getUserOrThrow(friendId);
-        userStorage.removeFriend(userId, friendId);
+        User user = getUserOrThrow(userId);
+        User friend = getUserOrThrow(friendId);
+
+        if (!user.getFriends().contains(friendId)) {
+            throw new NotFoundException("Friendship not found");
+        }
         activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
+        userStorage.removeFriend(userId, friendId);
     }
 
     //рекомендации
@@ -135,7 +136,7 @@ public class UserService {
         LinkedHashMap<User, Integer> sortedMap =
                 mapa.entrySet().stream()
                         .sorted(Entry.comparingByValue())
-                        .collect(Collectors.toMap(entry -> entry.getKey(), // Лямбда вместо Map.Entry::getKey
+                        .collect(Collectors.toMap(entry -> entry.getKey(),
                                 entry -> entry.getValue(),
                                 (e1, e2) -> e1, LinkedHashMap::new));
 

@@ -34,10 +34,15 @@ public class ReviewsService {
 
     public void setLike(int rewid, int userid) {
         Reviews rew = reviewsDBStorage.getRewById(rewid);
+        rew.plusUseFul(1);
+        reviewsDBStorage.updateRew(rew);
         reviewsDBStorage.addUseful(rewid, userid);
     }
 
     public void delLike(int rewid, int userid) {
+        Reviews rew = reviewsDBStorage.getRewById(rewid);
+        rew.minusUseFul(1);
+        reviewsDBStorage.updateRew(rew);
         reviewsDBStorage.delUseful(rewid, userid);
     }
 
@@ -47,17 +52,14 @@ public class ReviewsService {
 
     public List<Reviews> getPop(int count, Integer id) {
         if (id == null) {
-            List<Film> films = filmDbStorage.getFilms().stream()
-                    .collect(Collectors.toList());
+            List<Film> films = filmDbStorage.getFilms().stream().collect(Collectors.toList());
             for (Film film : films) {
                 List<List<Reviews>> rews = new ArrayList<>();
                 for (int i = 0; i < count; i++) {
                     rews.add(reviewsDBStorage.getReviewsByFilmId(film.getId()));
 
                 }
-                List<Reviews> reviews = rews.stream()
-                        .flatMap(List::stream)
-                        .collect(Collectors.toList());
+                List<Reviews> reviews = rews.stream().flatMap(List::stream).collect(Collectors.toList());
                 return reviews;
 
             }

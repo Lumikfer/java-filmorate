@@ -49,6 +49,4 @@ public class ReviewsController {
     public List<Reviews> getPopRew(@RequestParam(defaultValue = "10") int count, @RequestParam Integer filmId) {
         return reviewsService.getPop(count, filmId);
     }
-
-
 }
