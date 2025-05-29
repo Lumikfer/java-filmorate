@@ -78,4 +78,5 @@ CREATE TABLE IF NOT EXISTS activity_log (
     operation VARCHAR(50) NOT NULL,
     target_id INT NOT NULL,
     created DATE
-);
+
+--тест
