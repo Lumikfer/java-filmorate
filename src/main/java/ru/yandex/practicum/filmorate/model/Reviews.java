@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class Reviews {
-    Integer id;
+    Integer reviewId;
     String content;
     Boolean isPositive;
     int userId;
