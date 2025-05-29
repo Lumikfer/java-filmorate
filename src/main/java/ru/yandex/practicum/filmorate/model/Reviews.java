@@ -19,6 +19,7 @@ public class Reviews {
             useFul++;
         }
         return useFul;
+
     }
 
     public Integer dUseFul(Boolean isPositive, Integer useFul) {
