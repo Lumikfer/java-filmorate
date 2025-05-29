@@ -15,14 +15,14 @@ public class Reviews {
     Integer useFul;
 
     public Integer plusUseFul(Integer useFul) {
-            useFul++;
+        useFul++;
 
         return useFul;
 
     }
 
-    public Integer minusUseFul( Integer useFul) {
-            useFul--;
+    public Integer minusUseFul(Integer useFul) {
+        useFul--;
 
         return useFul;
     }
