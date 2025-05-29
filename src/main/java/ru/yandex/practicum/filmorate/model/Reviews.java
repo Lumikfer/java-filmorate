@@ -13,20 +13,20 @@ public class Reviews {
     int userId;
     int filmId;
     Integer useFul;
-    public Integer sUseFul(Boolean isPositive,Integer useFul) {
-        if(isPositive == true) {
-            useFul++;
-        }
-       return useFul;
-    }
 
-    public Integer dUseFul(Boolean isPositive,Integer useFul) {
-        if(isPositive == false) {
-            useFul--;
+    public Integer sUseFul(Boolean isPositive, Integer useFul) {
+        if (isPositive == true) {
+            useFul++;
         }
         return useFul;
     }
 
+    public Integer dUseFul(Boolean isPositive, Integer useFul) {
+        if (isPositive == false) {
+            useFul--;
+        }
+        return useFul;
+    }
 
 
 }

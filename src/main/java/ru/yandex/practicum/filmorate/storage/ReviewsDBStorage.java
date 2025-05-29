@@ -19,7 +19,6 @@ public class ReviewsDBStorage implements ReviewsStorage {
     private final JdbcTemplate jdbcTemplate;
 
 
-
     @Override
     public List<Reviews> getRew() {
         String sql = "SELECT * FROM reviews";
@@ -84,6 +83,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
                 reviews.getIsPositive(),
                 reviews.getId());
     }
+
     @Override
     public List<Reviews> getReviewsByFilmId(int filmId) {
         String sql = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC";
