@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -49,7 +50,7 @@ public class UserDbStorage implements UserStorage {
         List<User> users = jdbcTemplate.query(sql, this::mapRowToUser, id);
 
         if (users.isEmpty()) {
-            return null;
+            throw new NotFoundException("Такого фильма нет");
         } else {
             User user = users.get(0);
             return user;
