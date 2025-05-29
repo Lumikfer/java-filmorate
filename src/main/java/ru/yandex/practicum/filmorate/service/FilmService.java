@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
@@ -24,6 +25,8 @@ public class FilmService {
     private final UserStorage userStorage;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
+    private final ActivityLogStorage activityLogStorage;
 
 
     public Film addFilm(Film film) {
@@ -32,19 +35,23 @@ public class FilmService {
         if (mpaStorage.getMpaById(mpaId) == null) {
             throw new NotFoundException("Mpa not found");
         }
-
         Set<Genre> validatedGenres = new LinkedHashSet<>();
         for (Genre genre : film.getGenres()) {
             validatedGenres.add(genreStorage.getGenreById(genre.getId()));
         }
         film.setGenres(new ArrayList<>(validatedGenres));
+        Set<Director> validateDirector = new LinkedHashSet<>();
+        for (Director director : film.getDirectors()) {
+            validateDirector.add(directorStorage.getDirectorById(director.getId()));
+        }
+        film.setDirectors(new ArrayList<>(validateDirector));
         return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
         validateFilm(film);
         Film film1 = getFilmOrThrow(film.getId());
-        return  filmStorage.updateFilm(film);
+        return filmStorage.updateFilm(film);
     }
 
     public Collection<Film> getFilms() {
@@ -65,14 +72,19 @@ public class FilmService {
         if (user == null) {
             throw new NotFoundException("User not found with id: " + userId);
         }
+
         log.info(userId +" поставил лайк " +filmId);
+        log.info(userId + " поставил лайк " + filmId);
+
         filmStorage.addLike(filmId, userId);
+        activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
         getFilmOrThrow(filmId);
         getUserOrThrow(userId);
         filmStorage.removeLike(filmId, userId);
+        activityLogStorage.addActivity(userId, "LIKE", "REMOVE", filmId);
     }
 
     private Film getFilmOrThrow(int id) {
@@ -83,8 +95,8 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopularFilms(int count) {
-        return filmStorage.getPopularFilms(count);
+    public List<Film> getPopularFilms(int count, Integer year, Integer genreId) {
+        return filmStorage.getPopularFilms(count, year, genreId);
     }
 
     private void validateFilm(Film film) {
@@ -93,20 +105,29 @@ public class FilmService {
         }
     }
 
-
     private User getUserOrThrow(int id) {
         try {
-          return   userStorage.getUserById(id);
+            return userStorage.getUserById(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
     }
+
 //общие фильмы
     public List<Film> getCommonFilms(int userId,int friendId) {
         List<Film> commonFilms = new ArrayList<>();
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
         for(Film film:allfilm) {
             if(film.getLike().contains(userId)&&film.getLike().contains(friendId)) {
+
+
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        List<Film> commonFilms = new ArrayList<>();
+        List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
+        for (Film film : allfilm) {
+            if (film.getLike().contains(userId) && film.getLike().contains(friendId)) {
+
                 commonFilms.add(film);
             }
         }
@@ -117,5 +138,12 @@ public class FilmService {
         return commonFilms;
     }
 
+
+
+
+    public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
+        log.debug("Получение фильмов режисера с ID: {} с сортировкой по '{}'", directorId, sortBy);
+        return filmStorage.getFilmsByDirectorId(directorId, sortBy);
+    }
 
 }

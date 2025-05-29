@@ -8,14 +8,13 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 @Repository
@@ -26,6 +25,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
 
     @Override
     public Film addFilm(Film film) {
@@ -46,13 +46,15 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         updateGenres(film);
+        updateDirectors(film);
         return film;
     }
 
     @Override
     public Film updateFilm(Film film) {
         getFilmOrThrow(film.getId());
-        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE film_id = ?";
+        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, " +
+                "mpa_id = ? WHERE film_id = ?";
         jdbcTemplate.update(
                 sql,
                 film.getName(),
@@ -63,6 +65,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId()
         );
         updateGenres(film);
+        updateDirectors(film);
         return film;
     }
 
@@ -83,6 +86,19 @@ public class FilmDbStorage implements FilmStorage {
                     "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                     film.getId(),
                     genre.getId()
+            );
+        }
+    }
+
+    private void updateDirectors(Film film) {
+        jdbcTemplate.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
+        List<Director> directors = new ArrayList<>(film.getDirectors());
+        directors.sort(Comparator.comparingInt(Director::getId));
+        for (Director director : directors) {
+            jdbcTemplate.update(
+                    "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)",
+                    film.getId(),
+                    director.getId()
             );
         }
     }
@@ -112,10 +128,14 @@ public class FilmDbStorage implements FilmStorage {
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
         film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
-
+        Set<Integer> likes = getLikes(film.getId());
+        film.setLike(likes);
         List<Genre> genres = new ArrayList<>(genreStorage.getFilmGenres(film.getId()));
         genres.sort(Comparator.comparingInt(Genre::getId));
         film.setGenres(genres);
+        List<Director> directors = new ArrayList<>(directorStorage.getDirectorsByFilmId(film.getId()));
+        directors.sort(Comparator.comparingInt(Director::getId));
+        film.setDirectors(directors);
 
         return film;
     }
@@ -158,6 +178,7 @@ public class FilmDbStorage implements FilmStorage {
 
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
+        film.getLike().add(userId);
     }
 
 
@@ -179,23 +200,47 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-
     public List<Integer> getLikesForFilm(int filmId) {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
         return jdbcTemplate.queryForList(sql, Integer.class, filmId);
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, m.name AS mpa_name, COUNT(l.user_id) AS likes_count " +
+    public List<Film> getPopularFilms(int count, Integer year, Integer genreId) {
+        String newsql = "";
+        List<Object> params = new ArrayList<>();
+
+        if (year != null) {
+            newsql = "WHERE EXTRACT(YEAR FROM f.release_date) = ? ";
+            params.add(year);
+        }
+        if (genreId != null) {
+            newsql = "WHERE fg.genre_id = ? ";
+            params.add(genreId);
+        }
+        if (year != null && genreId != null) {
+            newsql = "WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ";
+            params.clear();
+            params.add(genreId);
+            params.add(year);
+        }
+
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name" +
+                " AS mpa_name " +
                 "FROM films f " +
-                "LEFT JOIN film_likes l ON f.film_id = l.film_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                newsql +
                 "GROUP BY f.film_id " +
-                "ORDER BY likes_count DESC " +
+                "ORDER BY COUNT(fl.user_id) DESC " +
                 "LIMIT ?";
-        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
+
+        params.add(count);
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm, params.toArray());
     }
+
 
     @Override
     public List<Film> searchFilm(String string) {
@@ -203,5 +248,35 @@ public class FilmDbStorage implements FilmStorage {
         return List.of();
     }
 
+
+
+
+    @Override
+    public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
+        String orderByClause;
+        switch (sortBy.toLowerCase()) {
+            case "year":
+                orderByClause = "f.release_date";
+                break;
+            case "likes":
+                orderByClause = "like_count DESC";
+                break;
+            default:
+                throw new IllegalArgumentException("Неподдерживаемый параметр сортировки: " + sortBy);
+        }
+
+        String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                "f.mpa_id, m.name AS mpa_name, " +
+                "COUNT(l.user_id) AS like_count " +
+                "FROM films f " +
+                "JOIN film_directors fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN film_likes l ON f.film_id = l.film_id " +
+                "JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "WHERE fd.director_id = ? " +
+                "GROUP BY f.film_id, m.name " +
+                "ORDER BY " + orderByClause;
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
+    }
 
 }
