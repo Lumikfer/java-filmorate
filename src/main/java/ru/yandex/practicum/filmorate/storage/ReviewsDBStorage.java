@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -29,7 +30,11 @@ public class ReviewsDBStorage implements ReviewsStorage {
     @Override
     public Reviews getRewById(int id) {
         String sql = "SELECT * FROM reviews WHERE review_id = ?";
-        return jdbcTemplate.queryForObject(sql, this::mapRowToReview, id);
+        try {
+            return jdbcTemplate.queryForObject(sql, this::mapRowToReview, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override

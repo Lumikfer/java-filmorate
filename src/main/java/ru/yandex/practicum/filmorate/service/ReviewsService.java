@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -84,7 +85,7 @@ public class ReviewsService {
 
     public void addDislike(int reviewId, int userId) {
 
-        removeLike(reviewId, userId);
+        reviewsDBStorage.delUseful(reviewId, userId);
     }
 
     public void removeDislike(int reviewId, int userId) {
@@ -94,10 +95,10 @@ public class ReviewsService {
 
     private void validateUserAndFilm(int userId, int filmId) {
         if (userDbStorage.getUserById(userId) == null) {
-            throw new NotFoundException("User not found");
+            throw new ValidationException("User not found");
         }
         if (filmDbStorage.getFilmById(filmId) == null) {
-            throw new NotFoundException("Film not found");
+            throw new ValidationException("Film not found");
         }
     }
 
