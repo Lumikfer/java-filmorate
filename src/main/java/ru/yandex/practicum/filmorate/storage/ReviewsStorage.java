@@ -13,12 +13,11 @@ public interface ReviewsStorage {
 
     void delRewById(Reviews review);
 
+    void addUseful(int reviewId, int userId);
+
+    void delUseful(int reviewId, int userId);
+
     void updateRew(Reviews review);
 
     List<Reviews> getReviewsByFilmId(int filmId);
-
-    // Новые методы для реакций
-    void addReaction(int reviewId, int userId, boolean isLike);
-
-    void removeReaction(int reviewId, int userId);
 }

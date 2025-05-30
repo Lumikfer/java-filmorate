@@ -31,11 +31,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
     public Reviews getRewById(int id) {
         String sql = "SELECT * FROM reviews WHERE review_id = ?";
         try {
-            Reviews review = jdbcTemplate.queryForObject(sql, this::mapRowToReview, id);
-            if (review != null) {
-                review.setUseful(getUsefulCount(id));
-            }
-            return review;
+            return jdbcTemplate.queryForObject(sql, this::mapRowToReview, id);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -60,11 +56,24 @@ public class ReviewsDBStorage implements ReviewsStorage {
 
     @Override
     public void delRewById(Reviews review) {
-        String deleteReactionsSql = "DELETE FROM review_ratings WHERE review_id = ?";
-        jdbcTemplate.update(deleteReactionsSql, review.getReviewId());
-
         String sql = "DELETE FROM reviews WHERE review_id = ?";
         jdbcTemplate.update(sql, review.getReviewId());
+    }
+
+    @Override
+    public void addUseful(int reviewId, int userId) {
+
+        String updateSql = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?;";
+        jdbcTemplate.update(updateSql, reviewId);
+
+    }
+
+    @Override
+    public void delUseful(int reviewId, int userId) {
+
+        String updateSql = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
+        jdbcTemplate.update(updateSql, reviewId);
+
     }
 
     @Override
@@ -78,34 +87,8 @@ public class ReviewsDBStorage implements ReviewsStorage {
 
     @Override
     public List<Reviews> getReviewsByFilmId(int filmId) {
-        String sql = "SELECT * FROM reviews WHERE film_id = ?";
+        String sql = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC";
         return jdbcTemplate.query(sql, this::mapRowToReview, filmId);
-    }
-
-    public void addReaction(int reviewId, int userId, boolean isLike) {
-        String sql = "INSERT INTO review_ratings (review_id, user_id, is_positive) " +
-                "VALUES (?, ?, ?) " +
-                "ON CONFLICT (review_id, user_id) DO UPDATE SET is_positive = EXCLUDED.is_positive";
-
-        jdbcTemplate.update(sql, reviewId, userId, isLike);
-        updateUsefulCount(reviewId);
-    }
-
-    public void removeReaction(int reviewId, int userId) {
-        String sql = "DELETE FROM review_ratings WHERE review_id = ? AND user_id = ?";
-        jdbcTemplate.update(sql, reviewId, userId);
-        updateUsefulCount(reviewId);
-    }
-
-    public int getUsefulCount(int reviewId) {
-        String sql = "SELECT COALESCE(SUM(CASE WHEN is_positive THEN 1 ELSE -1 END), 0) " +
-                "FROM review_ratings WHERE review_id = ?";
-        return jdbcTemplate.queryForObject(sql, Integer.class, reviewId);
-    }
-
-    private void updateUsefulCount(int reviewId) {
-        String sql = "UPDATE reviews SET useful = ? WHERE review_id = ?";
-        jdbcTemplate.update(sql, getUsefulCount(reviewId), reviewId);
     }
 
     private Reviews mapRowToReview(ResultSet rs, int rowNum) throws SQLException {

@@ -49,12 +49,12 @@ public class ReviewsService {
         if (review == null) {
             throw new NotFoundException("Review not found");
         }
-        review.setUseful(reviewsDBStorage.getUsefulCount(id));
         return review;
     }
 
     public List<Reviews> getPopularReviews(Integer filmId, int count) {
         if (filmId != null) {
+
             if (filmDbStorage.getFilmById(filmId) == null) {
                 throw new NotFoundException("Film not found");
             }
@@ -65,6 +65,7 @@ public class ReviewsService {
                     .collect(Collectors.toList());
         }
 
+
         return reviewsDBStorage.getRew()
                 .stream()
                 .sorted(Comparator.comparingInt(Reviews::getUseful).reversed())
@@ -74,22 +75,22 @@ public class ReviewsService {
 
     public void addLike(int reviewId, int userId) {
         validateReviewAndUser(reviewId, userId);
-        reviewsDBStorage.addReaction(reviewId, userId, true);
+        reviewsDBStorage.addUseful(reviewId, userId);
     }
 
     public void removeLike(int reviewId, int userId) {
         validateReviewAndUser(reviewId, userId);
-        reviewsDBStorage.removeReaction(reviewId, userId);
+        reviewsDBStorage.delUseful(reviewId, userId);
     }
 
     public void addDislike(int reviewId, int userId) {
         validateReviewAndUser(reviewId, userId);
-        reviewsDBStorage.addReaction(reviewId, userId, false);
+        reviewsDBStorage.delUseful(reviewId, userId);
     }
 
     public void removeDislike(int reviewId, int userId) {
         validateReviewAndUser(reviewId, userId);
-        reviewsDBStorage.removeReaction(reviewId, userId);
+        addLike(reviewId, userId);
     }
 
     private void validateUserAndFilm(int userId, int filmId) {
