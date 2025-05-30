@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.ActivityLog;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.ActivityLog;
 import ru.yandex.practicum.filmorate.storage.ActivityLogStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -22,7 +22,9 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+
     private final ActivityLogStorage activityLogStorage;
+
 
 
     public User addUser(User user) {
@@ -98,8 +100,9 @@ public class UserService {
     }
 
     public void deleteFriend(int userId, int friendId) {
-        getUserOrThrow(userId);
-        getUserOrThrow(friendId);
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+
         userStorage.removeFriend(userId, friendId);
         activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
     }
@@ -126,12 +129,14 @@ public class UserService {
                 }
             }
         }
+
         LinkedHashMap<User, Integer> sortedMap =
                 mapa.entrySet().stream()
                         .sorted(Entry.comparingByValue())
-                        .collect(Collectors.toMap(entry -> entry.getKey(), // Лямбда вместо Map.Entry::getKey
+                        .collect(Collectors.toMap(entry -> entry.getKey(),
                                 entry -> entry.getValue(),
                                 (e1, e2) -> e1, LinkedHashMap::new));
+
 
         User recuser = sortedMap.firstEntry().getKey();
         for (Film film : allfilm) {
@@ -139,7 +144,9 @@ public class UserService {
                 films.add(film);
             }
         }
+
         return films;
+
     }
 
     public List<ActivityLog> getActivityLogForUserId(int id) {
@@ -149,4 +156,5 @@ public class UserService {
         }
         return activityLogStorage.getFeedForUser(id);
     }
+
 }

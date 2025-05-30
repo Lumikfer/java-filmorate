@@ -69,10 +69,10 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         Film film = getFilmOrThrow(filmId);
         User user = userStorage.getUserById(userId);
-        if (user == null) {
-            throw new NotFoundException("User not found with id: " + userId);
-        }
+
         log.info(userId + " поставил лайк " + filmId);
+        log.info(userId + " поставил лайк " + filmId);
+
         filmStorage.addLike(filmId, userId);
         activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
     }
@@ -110,12 +110,14 @@ public class FilmService {
         }
     }
 
+//общие фильмы
 
     public List<Film> getCommonFilms(int userId, int friendId) {
         List<Film> commonFilms = new ArrayList<>();
         List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
         for (Film film : allfilm) {
             if (film.getLike().contains(userId) && film.getLike().contains(friendId)) {
+
                 commonFilms.add(film);
             }
         }
@@ -126,8 +128,10 @@ public class FilmService {
         return commonFilms;
     }
 
+
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
         log.debug("Получение фильмов режисера с ID: {} с сортировкой по '{}'", directorId, sortBy);
         return filmStorage.getFilmsByDirectorId(directorId, sortBy);
     }
+
 }
