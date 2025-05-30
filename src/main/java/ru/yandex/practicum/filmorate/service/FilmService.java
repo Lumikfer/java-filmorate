@@ -71,7 +71,6 @@ public class FilmService {
         User user = userStorage.getUserById(userId);
 
         log.info(userId + " поставил лайк " + filmId);
-        log.info(userId + " поставил лайк " + filmId);
 
         filmStorage.addLike(filmId, userId);
         activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
