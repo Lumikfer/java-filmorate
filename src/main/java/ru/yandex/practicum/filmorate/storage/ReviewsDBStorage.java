@@ -92,10 +92,11 @@ public class ReviewsDBStorage implements ReviewsStorage {
 
     @Override
     public void updateRew(Reviews review) {
-        String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
+        String sql = "UPDATE reviews SET content = ?, is_positive = ?, useful = ? WHERE review_id = ?";
         jdbcTemplate.update(sql,
                 review.getContent(),
                 review.getIsPositive(),
+                review.getUseful(),
                 review.getReviewId());
     }
 

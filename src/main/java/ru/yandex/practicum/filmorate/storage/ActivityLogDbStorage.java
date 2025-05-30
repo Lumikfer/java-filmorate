@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.ActivityLog;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Repository
@@ -19,19 +20,20 @@ public class ActivityLogDbStorage implements ActivityLogStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void addActivity(int userId, String actionType, String operation, int targetId) {
-        log.info("Добавление нового события user_id={}, action_type={}, operation={}, target_id={}",
-                userId, actionType, operation, targetId);
+    public void addActivity(int userId, String eventType, String operation, int entityId) {
+        log.info("Добавление нового события user_id={}, event_type={}, operation={}, entity_id={}",
+                userId, eventType, operation, entityId);
 
-        String sql = "INSERT INTO activity_log (user_id, action_type, operation, target_id, created) " +
+        String sql = "INSERT INTO activity_log (user_id, event_type, operation, entity_id, timestamp) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 userId,
-                actionType,
+                eventType,
                 operation,
-                targetId,
-                LocalDateTime.now()
+                entityId,
+                LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() //пришлось сделать так, постман тест хочет лонг значение а не время
+
         );
     }
 
@@ -39,22 +41,22 @@ public class ActivityLogDbStorage implements ActivityLogStorage {
     public List<ActivityLog> getFeedForUser(int userId) {
         log.debug("Получение ленты событий для пользователя с ID: {}", userId);
 
-        String sql = "SELECT activity_id, user_id, action_type, operation, target_id, created " +
+        String sql = "SELECT event_id, user_id, event_type, operation, entity_id, timestamp " +
                 "FROM activity_log " +
                 "WHERE user_id = ? " +
-                "ORDER BY activity_id DESC";
+                "ORDER BY event_id";
 
         return jdbcTemplate.query(sql, this::mapRowToActivityLog, userId);
     }
 
     private ActivityLog mapRowToActivityLog(ResultSet rs, int rowNum) throws SQLException {
         return new ActivityLog(
-                rs.getInt("activity_id"),
+                rs.getInt("event_id"),
                 rs.getInt("user_id"),
-                rs.getString("action_type"),
+                rs.getString("event_type"),
                 rs.getString("operation"),
-                rs.getInt("target_id"),
-                rs.getTimestamp("created").toLocalDateTime()
+                rs.getInt("entity_id"),
+                rs.getLong("timestamp")
         );
     }
 }

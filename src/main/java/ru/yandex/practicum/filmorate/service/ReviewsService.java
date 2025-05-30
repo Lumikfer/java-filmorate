@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Reviews;
+import ru.yandex.practicum.filmorate.storage.ActivityLogStorage;
 import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewsDBStorage;
 import ru.yandex.practicum.filmorate.storage.UserDbStorage;
@@ -18,11 +19,13 @@ public class ReviewsService {
     private final ReviewsDBStorage reviewsDBStorage;
     private final UserDbStorage userDbStorage;
     private final FilmDbStorage filmDbStorage;
+    private final ActivityLogStorage activityLogStorage;
 
     public Reviews createReview(Reviews review) {
         validateUserAndFilm(review.getUserId(), review.getFilmId());
         review.setUseful(0);
         reviewsDBStorage.addRew(review);
+        activityLogStorage.addActivity(review.getUserId(), "REVIEW", "ADD", review.getReviewId());
         return review;
     }
 
@@ -31,13 +34,15 @@ public class ReviewsService {
         Reviews existing = reviewsDBStorage.getRewById(review.getReviewId());
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
-        reviewsDBStorage.updateRew(existing);
-        return existing;
+        reviewsDBStorage.updateRew(review);
+        activityLogStorage.addActivity(review.getUserId(), "REVIEW", "UPDATE", review.getReviewId());
+        return review;
     }
 
     public void deleteReview(int id) {
         Reviews review = reviewsDBStorage.getRewById(id);
         reviewsDBStorage.delRewById(review);
+        activityLogStorage.addActivity(review.getUserId(), "REVIEW", "REMOVE", review.getReviewId());
     }
 
     public Reviews getReviewById(int id) {
