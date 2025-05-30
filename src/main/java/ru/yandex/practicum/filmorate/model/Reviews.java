@@ -28,7 +28,6 @@ public class Reviews {
 
     int useful;
 
-    Set<Integer>  userslike  = new HashSet<>();
 
     public void incrementUseful() {
         this.useful++;
