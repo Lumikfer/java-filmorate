@@ -65,13 +65,13 @@ public class ReviewsDBStorage implements ReviewsStorage {
         Integer currentReaction = getUserReaction(reviewId, userId);
 
         if (currentReaction == null) {
-
             addReaction(reviewId, userId, 1);
             updateUsefulCount(reviewId, 1);
         } else if (currentReaction == 0) {
-
             updateReaction(reviewId, userId, 1);
             updateUsefulCount(reviewId, 2);
+        } else if (currentReaction == 1) {
+            removeReaction(reviewId, userId);
         }
     }
 
@@ -80,13 +80,13 @@ public class ReviewsDBStorage implements ReviewsStorage {
         Integer currentReaction = getUserReaction(reviewId, userId);
 
         if (currentReaction == null) {
-
             addReaction(reviewId, userId, 0);
             updateUsefulCount(reviewId, -1);
         } else if (currentReaction == 1) {
-
             updateReaction(reviewId, userId, 0);
             updateUsefulCount(reviewId, -2);
+        } else if (currentReaction == 0) {
+            removeReaction(reviewId, userId);
         }
     }
 
@@ -162,9 +162,8 @@ public class ReviewsDBStorage implements ReviewsStorage {
             String deleteSql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
             jdbcTemplate.update(deleteSql, reviewId, userId);
 
-
-            int correction = reaction == 0 ? 1 : -1;
-            updateUsefulCount(reviewId, correction);
+            int delta = (reaction == 1) ? -1 : 1;
+            updateUsefulCount(reviewId, delta);
         }
     }
 
