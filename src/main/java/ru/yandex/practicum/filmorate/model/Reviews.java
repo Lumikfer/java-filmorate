@@ -13,6 +13,7 @@ public class Reviews {
     int filmId;
     int useful;
 
+
     public void incrementUseful() {
         this.useful++;
     }

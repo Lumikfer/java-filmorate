@@ -27,8 +27,8 @@ public class ReviewsService {
     }
 
     public Reviews updateReview(Reviews review) {
-        validateReviewExists(review.getId());
-        Reviews existing = reviewsDBStorage.getRewById(review.getId());
+        validateReviewExists(review.getReviewId());
+        Reviews existing = reviewsDBStorage.getRewById(review.getReviewId());
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
         reviewsDBStorage.updateRew(existing);

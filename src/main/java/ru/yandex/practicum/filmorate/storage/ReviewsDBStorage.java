@@ -46,23 +46,21 @@ public class ReviewsDBStorage implements ReviewsStorage {
             stmt.setInt(5, review.getUseful());
             return stmt;
         }, keyHolder);
-        review.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
     }
 
     @Override
     public void delRewById(Reviews review) {
         String sql = "DELETE FROM reviews WHERE review_id = ?";
-        jdbcTemplate.update(sql, review.getId());
+        jdbcTemplate.update(sql, review.getReviewId());
     }
 
     @Override
     public void addUseful(int reviewId, int userId) {
 
-        String updateSql = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
+        String updateSql = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?;";
         jdbcTemplate.update(updateSql, reviewId);
 
-        String insertSql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, true)";
-        jdbcTemplate.update(insertSql, reviewId, userId);
     }
 
     @Override
@@ -71,8 +69,6 @@ public class ReviewsDBStorage implements ReviewsStorage {
         String updateSql = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
         jdbcTemplate.update(updateSql, reviewId);
 
-        String deleteSql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
-        jdbcTemplate.update(deleteSql, reviewId, userId);
     }
 
     @Override
@@ -81,7 +77,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
         jdbcTemplate.update(sql,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getId());
+                review.getReviewId());
     }
 
     @Override
@@ -92,7 +88,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
 
     private Reviews mapRowToReview(ResultSet rs, int rowNum) throws SQLException {
         return Reviews.builder()
-                .id(rs.getInt("review_id"))
+                .reviewId(rs.getInt("review_id"))
                 .content(rs.getString("content"))
                 .isPositive(rs.getBoolean("is_positive"))
                 .userId(rs.getInt("user_id"))

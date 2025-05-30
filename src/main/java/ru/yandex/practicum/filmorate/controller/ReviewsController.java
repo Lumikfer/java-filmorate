@@ -29,6 +29,7 @@ public class ReviewsController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteReview(@PathVariable int id) {
+        Reviews review = reviewsService.getReviewById(id);
         reviewsService.deleteReview(id);
     }
 
