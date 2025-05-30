@@ -100,14 +100,11 @@ public class UserService {
     }
 
     public void deleteFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
 
-        if (!user.getFriends().contains(friendId)) {
-            throw new NotFoundException("Friendship not found");
-        }
-        activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
         userStorage.removeFriend(userId, friendId);
+        activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
     }
 
     //рекомендации

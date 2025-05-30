@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -38,9 +37,6 @@ public class ReviewsService {
 
     public void deleteReview(int id) {
         Reviews review = reviewsDBStorage.getRewById(id);
-        if (review == null) {
-            throw new NotFoundException("Review not found");
-        }
         reviewsDBStorage.delRewById(review);
     }
 
@@ -54,7 +50,6 @@ public class ReviewsService {
 
     public List<Reviews> getPopularReviews(Integer filmId, int count) {
         if (filmId != null) {
-
             if (filmDbStorage.getFilmById(filmId) == null) {
                 throw new NotFoundException("Film not found");
             }
@@ -74,32 +69,23 @@ public class ReviewsService {
     }
 
     public void addLike(int reviewId, int userId) {
-        validateReviewAndUser(reviewId, userId);
+        userDbStorage.getUserById(userId);
         reviewsDBStorage.addUseful(reviewId, userId);
     }
 
-    public void removeLike(int reviewId, int userId) {
-        validateReviewAndUser(reviewId, userId);
-        reviewsDBStorage.delUseful(reviewId, userId);
+    public void removeLikeAndDislike(int reviewId, int userId) {
+        userDbStorage.getUserById(userId);
+        reviewsDBStorage.deleteLikeForReview(reviewId, userId);
     }
 
     public void addDislike(int reviewId, int userId) {
-        validateReviewAndUser(reviewId, userId);
+        userDbStorage.getUserById(userId);
         reviewsDBStorage.delUseful(reviewId, userId);
     }
 
-    public void removeDislike(int reviewId, int userId) {
-        validateReviewAndUser(reviewId, userId);
-        addLike(reviewId, userId);
-    }
-
     private void validateUserAndFilm(int userId, int filmId) {
-        if (userDbStorage.getUserById(userId) == null) {
-            throw new ValidationException("User not found");
-        }
-        if (filmDbStorage.getFilmById(filmId) == null) {
-            throw new ValidationException("Film not found");
-        }
+        userDbStorage.getUserById(userId);
+        filmDbStorage.getFilmById(filmId);
     }
 
     private void validateReviewExists(int id) {
@@ -108,10 +94,4 @@ public class ReviewsService {
         }
     }
 
-    private void validateReviewAndUser(int reviewId, int userId) {
-        validateReviewExists(reviewId);
-        if (userDbStorage.getUserById(userId) == null) {
-            throw new NotFoundException("User not found");
-        }
-    }
 }

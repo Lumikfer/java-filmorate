@@ -49,9 +49,15 @@ public class UserDbStorage implements UserStorage {
         List<User> users = jdbcTemplate.query(sql, this::mapRowToUser, id);
 
         if (users.isEmpty()) {
-            throw new NotFoundException("Такого фильма нет");
+            throw new NotFoundException("Такого пользователя нет");
         } else {
             User user = users.get(0);
+            List<User> friends = getFriends(user.getId());
+            Set<Integer> frinedsId = new HashSet<>();
+            for (User user1 : friends) {
+                frinedsId.add(user1.getId());
+            }
+            user.setFriends(frinedsId);
             return user;
         }
     }
@@ -89,13 +95,9 @@ public class UserDbStorage implements UserStorage {
         jdbcTemplate.update(sql, userId, friendId);
     }
 
-
     public void removeFriend(int userId, int friendId) {
         String sql = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
-        int rowsDeleted = jdbcTemplate.update(sql, userId, friendId);
-        if (rowsDeleted == 0) {
-            throw new NotFoundException("----");
-        }
+        jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override
@@ -107,7 +109,14 @@ public class UserDbStorage implements UserStorage {
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
 
-        return User.builder().id(rs.getInt("user_id")).email(rs.getString("email")).login(rs.getString("login")).name(rs.getString("name")).birthday(rs.getDate("birthday").toLocalDate()).build();
+        return User.builder()
+                .id(rs.getInt("user_id"))
+                .email(rs.getString("email"))
+                .login(rs.getString("login"))
+                .name(rs.getString("name"))
+                .birthday(rs.getDate("birthday")
+                        .toLocalDate()).build();
+
     }
 
     @Override

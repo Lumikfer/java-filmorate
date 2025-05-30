@@ -1,11 +1,10 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Reviews;
 
 import java.sql.PreparedStatement;
@@ -15,10 +14,12 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
-@RequiredArgsConstructor
 public class ReviewsDBStorage implements ReviewsStorage {
     private final JdbcTemplate jdbcTemplate;
 
+    public ReviewsDBStorage(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public List<Reviews> getRew() {
@@ -29,16 +30,15 @@ public class ReviewsDBStorage implements ReviewsStorage {
     @Override
     public Reviews getRewById(int id) {
         String sql = "SELECT * FROM reviews WHERE review_id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, this::mapRowToReview, id);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
+        List<Reviews> reviews = jdbcTemplate.query(sql, this::mapRowToReview, id);
+        if (reviews.isEmpty()) {
+            throw new NotFoundException("не найден");
         }
+        return reviews.getFirst();
     }
 
     @Override
     public void addRew(Reviews review) {
-
         String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) " +
                 "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -62,32 +62,32 @@ public class ReviewsDBStorage implements ReviewsStorage {
 
     @Override
     public void addUseful(int reviewId, int userId) {
-        Integer currentReaction = getUserReaction(reviewId, userId);
+        String sqlDel = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
+        jdbcTemplate.update(sqlDel, reviewId, userId);
 
-        if (currentReaction == null) {
-            addReaction(reviewId, userId, 1);
-            updateUsefulCount(reviewId, 1);
-        } else if (currentReaction == 0) {
-            updateReaction(reviewId, userId, 1);
-            updateUsefulCount(reviewId, 2);
-        } else if (currentReaction == 1) {
-            removeReaction(reviewId, userId);
-        }
+        String sql = "INSERT INTO review_likes (review_id, user_id, useful) " +
+                "VALUES (?, ?, ?)";
+
+        jdbcTemplate.update(sql, reviewId, userId, 1);
+        chekUsefulCountInReviewId(reviewId);
     }
 
     @Override
     public void delUseful(int reviewId, int userId) {
-        Integer currentReaction = getUserReaction(reviewId, userId);
+        String sqlDel = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
+        jdbcTemplate.update(sqlDel, reviewId, userId);
 
-        if (currentReaction == null) {
-            addReaction(reviewId, userId, 0);
-            updateUsefulCount(reviewId, -1);
-        } else if (currentReaction == 1) {
-            updateReaction(reviewId, userId, 0);
-            updateUsefulCount(reviewId, -2);
-        } else if (currentReaction == 0) {
-            removeReaction(reviewId, userId);
-        }
+        String sql = "INSERT INTO review_likes (review_id, user_id, useful) " +
+                "VALUES (?, ?, ?)";
+
+        jdbcTemplate.update(sql, reviewId, userId, -1);
+        chekUsefulCountInReviewId(reviewId);
+    }
+
+    public void deleteLikeForReview(int reviewId, int userId) {
+        String sqlDel = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
+        jdbcTemplate.update(sqlDel, reviewId, userId);
+        chekUsefulCountInReviewId(reviewId);
     }
 
     @Override
@@ -116,56 +116,36 @@ public class ReviewsDBStorage implements ReviewsStorage {
                 .build();
     }
 
-    private void addOrUpdateReaction(int reviewId, int userId, int useful) {
-        String updateSql = "UPDATE review_likes SET useful = ? WHERE review_id = ? AND user_id = ?";
-        int updated = jdbcTemplate.update(updateSql, useful, reviewId, userId);
-
-        if (updated == 0) {
-            String insertSql = "INSERT INTO review_likes (review_id, user_id, useful) VALUES (?, ?, ?)";
-            jdbcTemplate.update(insertSql, reviewId, userId, useful);
+    /*
+    public void chekPositive(int reviewId) {
+        String positive = "false";
+        String sql = "SELECT * FROM reviews WHERE review_id = ?";
+        List<Reviews> reviews = jdbcTemplate.query(sql, this::mapRowToReview, reviewId);
+        Reviews review = reviews.getFirst();
+        if (review.getUseful() > 0) {
+            positive = "true";
         }
+        sql = "UPDATE reviews SET is_positive = " + positive + " WHERE review_id = ? ";
+        jdbcTemplate.update(sql, reviewId);
     }
+     */
 
-    private void updateReviewUseful(int reviewId, int delta) {
-        String sql = "UPDATE reviews SET useful = useful + ? WHERE review_id = ?";
-        jdbcTemplate.update(sql, delta, reviewId);
-    }
+    private void chekUsefulCountInReviewId(int reviewId) {
+        String sqlUseful = "SELECT SUM(review_likes.useful) AS likes_count " +
+                "FROM review_likes " +
+                "WHERE review_id = ? " +
+                "GROUP BY review_id";
 
-    public Integer getUserReaction(int reviewId, int userId) {
-        String sql = "SELECT useful FROM review_likes WHERE review_id = ? AND user_id = ?";
+        List<Integer> likesCounts = jdbcTemplate.queryForList(sqlUseful, Integer.class, reviewId);
+        Integer likesCount;
 
-        try {
-            return jdbcTemplate.queryForObject(sql, Integer.class, reviewId, userId);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
+        if (likesCounts.isEmpty()) {
+            likesCount = 0;
+        } else {
+            likesCount = likesCounts.getFirst();
         }
+
+        String sql = "UPDATE reviews SET useful = ? WHERE review_id = ?";
+        jdbcTemplate.update(sql,likesCount, reviewId);
     }
-
-    private void addReaction(int reviewId, int userId, int useful) {
-        String sql = "INSERT INTO review_likes (review_id, user_id, useful) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, reviewId, userId, useful);
-    }
-
-    private void updateReaction(int reviewId, int userId, int useful) {
-        String sql = "UPDATE review_likes SET useful = ? WHERE review_id = ? AND user_id = ?";
-        jdbcTemplate.update(sql, useful, reviewId, userId);
-    }
-
-    private void updateUsefulCount(int reviewId, int delta) {
-        String sql = "UPDATE reviews SET useful = useful + ? WHERE review_id = ?";
-        jdbcTemplate.update(sql, delta, reviewId);
-    }
-
-    public void removeReaction(int reviewId, int userId) {
-        Integer reaction = getUserReaction(reviewId, userId);
-        if (reaction != null) {
-            String deleteSql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
-            jdbcTemplate.update(deleteSql, reviewId, userId);
-
-            int delta = (reaction == 1) ? -1 : 1;
-            updateUsefulCount(reviewId, delta);
-        }
-    }
-
-
 }
