@@ -95,3 +95,10 @@ CREATE TABLE IF NOT EXISTS activity_log (
     target_id INT NOT NULL,
     created DATE
 );
+
+CREATE TABLE IF NOT EXISTS review_ratings (
+    review_id INTEGER NOT NULL REFERENCES reviews(review_id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(user_id),
+    is_positive BOOLEAN NOT NULL,
+    PRIMARY KEY (review_id, user_id)
+);
