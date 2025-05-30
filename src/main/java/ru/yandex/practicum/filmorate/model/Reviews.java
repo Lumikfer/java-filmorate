@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
 @Builder
 public class Reviews {
@@ -24,6 +27,8 @@ public class Reviews {
     private Integer filmId;
 
     int useful;
+
+    Set<Integer>  userslike  = new HashSet<>();
 
     public void incrementUseful() {
         this.useful++;

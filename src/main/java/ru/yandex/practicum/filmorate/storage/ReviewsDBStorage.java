@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -14,12 +15,10 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@RequiredArgsConstructor
 public class ReviewsDBStorage implements ReviewsStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public ReviewsDBStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public List<Reviews> getRew() {
@@ -39,6 +38,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
 
     @Override
     public void addRew(Reviews review) {
+
         String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) " +
                 "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -52,6 +52,9 @@ public class ReviewsDBStorage implements ReviewsStorage {
             return stmt;
         }, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        int reviewId = review.getReviewId();
+        int userId = review.getUserId();
+
     }
 
     @Override
@@ -62,19 +65,30 @@ public class ReviewsDBStorage implements ReviewsStorage {
 
     @Override
     public void addUseful(int reviewId, int userId) {
+        Integer currentReaction = getUserReaction(reviewId, userId);
 
-        String updateSql = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?;";
-        jdbcTemplate.update(updateSql, reviewId);
-
+        if (currentReaction == null) {
+            addOrUpdateReaction(reviewId, userId, 1);
+            updateReviewUseful(reviewId, 1);
+        } else if (currentReaction == 0) {
+            addOrUpdateReaction(reviewId, userId, 1);
+            updateReviewUseful(reviewId, 2);
+        }
     }
 
     @Override
     public void delUseful(int reviewId, int userId) {
+        Integer currentReaction = getUserReaction(reviewId, userId);
 
-        String updateSql = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
-        jdbcTemplate.update(updateSql, reviewId);
-
+        if (currentReaction == null) {
+            addOrUpdateReaction(reviewId, userId, 0);
+            updateReviewUseful(reviewId, -1);
+        } else if (currentReaction == 1) {
+            addOrUpdateReaction(reviewId, userId, 0);
+            updateReviewUseful(reviewId, -2);
+        }
     }
+
 
     @Override
     public void updateRew(Reviews review) {
@@ -101,4 +115,28 @@ public class ReviewsDBStorage implements ReviewsStorage {
                 .useful(rs.getInt("useful"))
                 .build();
     }
+
+    private void addOrUpdateReaction(int reviewId, int userId, int useful) {
+        String sql = "MERGE INTO review_likes (review_id, user_id, useful) " +
+                "KEY (review_id, user_id) " +
+                "VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, reviewId, userId, useful);
+    }
+
+    private void updateReviewUseful(int reviewId, int delta) {
+        String sql = "UPDATE reviews SET useful = useful + ? WHERE review_id = ?";
+        jdbcTemplate.update(sql, delta, reviewId);
+    }
+
+    public Integer getUserReaction(int reviewId, int userId) {
+        String sql = "SELECT useful FROM review_likes WHERE review_id = ? AND user_id = ?";
+
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, reviewId, userId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+
 }
