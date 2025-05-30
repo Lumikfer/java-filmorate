@@ -84,12 +84,12 @@ public class ReviewsService {
     }
 
     public void addDislike(int reviewId, int userId) {
-
+        validateReviewAndUser(reviewId, userId);
         reviewsDBStorage.delUseful(reviewId, userId);
     }
 
     public void removeDislike(int reviewId, int userId) {
-
+        validateReviewAndUser(reviewId, userId);
         addLike(reviewId, userId);
     }
 
