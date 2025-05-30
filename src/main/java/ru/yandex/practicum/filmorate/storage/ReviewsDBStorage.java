@@ -52,9 +52,6 @@ public class ReviewsDBStorage implements ReviewsStorage {
             return stmt;
         }, keyHolder);
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
-        int reviewId = review.getReviewId();
-        int userId = review.getUserId();
-
     }
 
     @Override
@@ -65,27 +62,43 @@ public class ReviewsDBStorage implements ReviewsStorage {
 
     @Override
     public void addUseful(int reviewId, int userId) {
-        Integer currentReaction = getUserReaction(reviewId, userId);
+        Integer reaction = getUserReaction(reviewId, userId);
 
-        if (currentReaction == null) {
-            addOrUpdateReaction(reviewId, userId, 1);
-            updateReviewUseful(reviewId, 1);
-        } else if (currentReaction == 0) {
-            addOrUpdateReaction(reviewId, userId, 1);
-            updateReviewUseful(reviewId, 2);
+        if (reaction == null) {
+
+            jdbcTemplate.update(
+                    "INSERT INTO review_likes (review_id, user_id, useful) VALUES (?, ?, 1)",
+                    reviewId, userId
+            );
+            jdbcTemplate.update(
+                    "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?",
+                    reviewId
+            );
+        } else if (reaction == 0) {
+
+            jdbcTemplate.update(
+                    "UPDATE review_likes SET useful = 1 WHERE review_id = ? AND user_id = ?",
+                    reviewId, userId
+            );
+            jdbcTemplate.update(
+                    "UPDATE reviews SET useful = useful + 2 WHERE review_id = ?",
+                    reviewId
+            );
         }
+
     }
 
     @Override
     public void delUseful(int reviewId, int userId) {
-        Integer currentReaction = getUserReaction(reviewId, userId);
+        Integer reaction = getUserReaction(reviewId, userId);
 
-        if (currentReaction == null) {
-            addOrUpdateReaction(reviewId, userId, 0);
-            updateReviewUseful(reviewId, -1);
-        } else if (currentReaction == 1) {
-            addOrUpdateReaction(reviewId, userId, 0);
-            updateReviewUseful(reviewId, -2);
+        if (reaction != null) {
+            String deleteSql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
+            jdbcTemplate.update(deleteSql, reviewId, userId);
+
+            int delta = (reaction == 1) ? -1 : 1;
+            String updateSql = "UPDATE reviews SET useful = useful + ? WHERE review_id = ?";
+            jdbcTemplate.update(updateSql, delta, reviewId);
         }
     }
 
