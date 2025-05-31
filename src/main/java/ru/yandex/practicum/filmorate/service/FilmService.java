@@ -93,7 +93,6 @@ public class FilmService {
         }
     }
 
-
     public List<Film> getCommonFilms(int userId, int friendId) {
         List<Film> allFilms = new ArrayList<>(filmStorage.getFilms());
         List<Film> commonFilms = new ArrayList<>();
@@ -125,18 +124,6 @@ public class FilmService {
     public List<Film> searchFilms(String query, String by) {
         if (query == null || query.isBlank()) {
             return Collections.emptyList();
-        }
-    }
-
-
-    public List<Film> getCommonFilms(int userId, int friendId) {
-        List<Film> commonFilms = new ArrayList<>();
-        List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
-        for (Film film : allfilm) {
-            if (film.getLike().contains(userId) && film.getLike().contains(friendId)) {
-
-                commonFilms.add(film);
-            }
         }
 
         String queryLower = query.toLowerCase();

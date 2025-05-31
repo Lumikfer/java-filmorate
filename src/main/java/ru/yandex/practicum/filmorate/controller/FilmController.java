@@ -78,13 +78,13 @@ public class FilmController {
     public List<Film> searchFilms(
             @RequestParam String query,
             @RequestParam(defaultValue = "title,director") String by) {
-
         if (query == null || query.isBlank()) {
             throw new ValidationException("Query parameter cannot be empty");
         }
 
         String normalizedBy = by.trim().toLowerCase();
         Set<String> validCriteria = Set.of("title", "director");
+
 
         if (!Arrays.stream(normalizedBy.split(","))
                 .anyMatch(validCriteria::contains)) {
