@@ -107,46 +107,48 @@ public class UserService {
         activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
     }
 
-    //рекомендации
-    public List<Film> recomendation(int userId) {
-        List<Film> allfilm = new ArrayList<>(filmStorage.getFilms());
-        List<User> alluser = new ArrayList<>(userStorage.getUsers());
-        List<Film> films = new ArrayList<>();
-        Map<User, Integer> mapa = new HashMap<>();
-        for (User users : alluser) {
-            for (Film film : allfilm) {
-                if (users.getId() == userId) {
-                    continue;
-                }
-                if (film.getLike().contains(userId) && film.getLike().contains(users.getId())) {
-                    films.add(film);
-                    if (mapa.containsKey(users)) {
-                        log.info("добавлен " + users.getId());
-                        mapa.put(users, mapa.get(users) + 1);
-                    } else {
-                        mapa.put(users, 1);
-                    }
-                }
-            }
+    public List<Film> recommendation(int userId) {
+        List<Film> allFilms = new ArrayList<>(filmStorage.getFilms());
+        Collection<User> allUsers = userStorage.getUsers();
+
+        Set<Integer> currentUserLikes = allFilms.stream()
+                .filter(f -> f.getLike().contains(userId))
+                .map(Film::getId)
+                .collect(Collectors.toSet());
+
+        Map<Integer, Integer> similarityMap = new HashMap<>();
+
+        for (User user : allUsers) {
+            if (user.getId() == userId) continue;
+
+            Set<Integer> userLikes = allFilms.stream()
+                    .filter(f -> f.getLike().contains(user.getId()))
+                    .map(Film::getId)
+                    .collect(Collectors.toSet());
+
+            Set<Integer> commonLikes = new HashSet<>(currentUserLikes);
+            commonLikes.retainAll(userLikes);
+
+            similarityMap.put(user.getId(), commonLikes.size());
         }
 
-        LinkedHashMap<User, Integer> sortedMap =
-                mapa.entrySet().stream()
-                        .sorted(Entry.comparingByValue())
-                        .collect(Collectors.toMap(entry -> entry.getKey(),
-                                entry -> entry.getValue(),
-                                (e1, e2) -> e1, LinkedHashMap::new));
+        Optional<Map.Entry<Integer, Integer>> bestMatch = similarityMap.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue());
 
-
-        User recuser = sortedMap.firstEntry().getKey();
-        for (Film film : allfilm) {
-            if (film.getLike().contains(recuser.getId()) && !film.getLike().contains(userId)) {
-                films.add(film);
-            }
+        if (bestMatch.isEmpty() || bestMatch.get().getValue() == 0) {
+            return Collections.emptyList();
         }
 
-        return films;
+        int recommendedUserId = bestMatch.get().getKey();
 
+        return allFilms.stream()
+                .filter(f ->
+                        f.getLike().contains(recommendedUserId) &&
+                                !f.getLike().contains(userId) &&
+                                !currentUserLikes.contains(f.getId())
+                )
+                .collect(Collectors.toList());
     }
 
     public List<ActivityLog> getActivityLogForUserId(int id) {
