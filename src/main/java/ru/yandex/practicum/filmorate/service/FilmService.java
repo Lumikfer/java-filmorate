@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.*;
-import  ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Director;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -45,7 +45,7 @@ public class FilmService {
     public Film updateFilm(Film film) {
         validateFilm(film);
         Film film1 = getFilmOrThrow(film.getId());
-        return  filmStorage.updateFilm(film);
+        return filmStorage.updateFilm(film);
     }
 
     public Collection<Film> getFilms() {
@@ -83,8 +83,8 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopularFilms(int count,Integer year,Integer genreId) {
-        return filmStorage.getPopularFilms(count,year,genreId);
+    public List<Film> getPopularFilms(int count, Integer year, Integer genreId) {
+        return filmStorage.getPopularFilms(count, year, genreId);
     }
 
     private void validateFilm(Film film) {
@@ -115,7 +115,7 @@ public class FilmService {
 
     private User getUserOrThrow(int id) {
         try {
-          return   userStorage.getUserById(id);
+            return userStorage.getUserById(id);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
         }
@@ -156,6 +156,7 @@ public class FilmService {
                 ))
                 .collect(Collectors.toList());
     }
+
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
         log.debug("Получение фильмов режисера с ID: {} с сортировкой по '{}'", directorId, sortBy);
         return filmStorage.getFilmsByDirectorId(directorId, sortBy);
