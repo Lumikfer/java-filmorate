@@ -109,7 +109,7 @@ public class FilmService {
         }
     }
 
-//общие фильмы
+
 
     public List<Film> getCommonFilms(int userId, int friendId) {
         List<Film> commonFilms = new ArrayList<>();
