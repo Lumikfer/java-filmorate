@@ -81,13 +81,15 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         List<Genre> genres = new ArrayList<>(film.getGenres());
         genres.sort(Comparator.comparingInt(Genre::getId));
-        for (Genre genre : genres) {
+        LinkedHashSet<Genre> genreSet = new LinkedHashSet<>(genres);
+        for (Genre genre : genreSet) {
             jdbcTemplate.update(
                     "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                     film.getId(),
                     genre.getId()
             );
         }
+        film.setGenres(new LinkedList<>(genreSet));
     }
 
     private void updateDirectors(Film film) {
@@ -175,8 +177,10 @@ public class FilmDbStorage implements FilmStorage {
 
         String checkSql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
+
         if (count != null && count > 0) {
-            throw new ValidationException("Лайк уже поставлен.");
+            return;
+            //throw new ValidationException("Лайк уже поставлен.");
         }
 
 
@@ -232,7 +236,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name" +
                 " AS mpa_name " +
                 "FROM films f " +
-                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 newsql +

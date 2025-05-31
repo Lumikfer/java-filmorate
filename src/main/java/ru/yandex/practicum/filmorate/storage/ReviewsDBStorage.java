@@ -149,4 +149,10 @@ public class ReviewsDBStorage implements ReviewsStorage {
         String sql = "UPDATE reviews SET useful = ? WHERE review_id = ?";
         jdbcTemplate.update(sql,likesCount, reviewId);
     }
+
+    public Boolean searchReviewForUserIdAndFilmId(int userId, int filmId) {
+        String sql = "SELECT * FROM reviews WHERE user_id = ? AND film_id = ?";
+        List<Reviews> reviews = jdbcTemplate.query(sql, this::mapRowToReview, userId, filmId);
+        return !reviews.isEmpty();
+    }
 }

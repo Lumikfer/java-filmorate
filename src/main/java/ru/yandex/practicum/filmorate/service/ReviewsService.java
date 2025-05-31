@@ -23,6 +23,9 @@ public class ReviewsService {
 
     public Reviews createReview(Reviews review) {
         validateUserAndFilm(review.getUserId(), review.getFilmId());
+        if (reviewsDBStorage.searchReviewForUserIdAndFilmId(review.getUserId(), review.getFilmId())) {
+            throw new NotFoundException("такой ревью уже существует");
+        }
         review.setUseful(0);
         reviewsDBStorage.addRew(review);
         activityLogStorage.addActivity(review.getUserId(), "REVIEW", "ADD", review.getReviewId());
@@ -30,13 +33,14 @@ public class ReviewsService {
     }
 
     public Reviews updateReview(Reviews review) {
+        validateUserAndFilm(review.getUserId(), review.getFilmId());
         validateReviewExists(review.getReviewId());
         Reviews existing = reviewsDBStorage.getRewById(review.getReviewId());
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
-        reviewsDBStorage.updateRew(review);
+        reviewsDBStorage.updateRew(existing);
         activityLogStorage.addActivity(review.getUserId(), "REVIEW", "UPDATE", review.getReviewId());
-        return review;
+        return existing;
     }
 
     public void deleteReview(int id) {
@@ -76,16 +80,19 @@ public class ReviewsService {
     public void addLike(int reviewId, int userId) {
         userDbStorage.getUserById(userId);
         reviewsDBStorage.addUseful(reviewId, userId);
+        activityLogStorage.addActivity(userId, "LIKE", "ADD", reviewId);
     }
 
     public void removeLikeAndDislike(int reviewId, int userId) {
         userDbStorage.getUserById(userId);
         reviewsDBStorage.deleteLikeForReview(reviewId, userId);
+        activityLogStorage.addActivity(userId, "LIKE", "REMOVE", reviewId);
     }
 
     public void addDislike(int reviewId, int userId) {
         userDbStorage.getUserById(userId);
         reviewsDBStorage.delUseful(reviewId, userId);
+        activityLogStorage.addActivity(userId, "LIKE", "ADD", reviewId);
     }
 
     private void validateUserAndFilm(int userId, int filmId) {

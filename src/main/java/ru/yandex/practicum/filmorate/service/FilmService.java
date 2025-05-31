@@ -162,6 +162,10 @@ public class FilmService {
 
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
         log.debug("Получение фильмов режисера с ID: {} с сортировкой по '{}'", directorId, sortBy);
-        return filmStorage.getFilmsByDirectorId(directorId, sortBy);
+        List<Film> films = filmStorage.getFilmsByDirectorId(directorId, sortBy);
+        if (films.isEmpty()) {
+            throw new NotFoundException("Фильмы не найдены");
+        }
+        return films;
     }
 }

@@ -8,7 +8,11 @@ import lombok.Data;
 @Builder
 public class Reviews {
     Integer reviewId;
+
+    @NotNull
     String content;
+
+    @NotNull
     Boolean isPositive;
 
     @NotNull
