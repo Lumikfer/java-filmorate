@@ -79,9 +79,9 @@ public class UserController {
         userService.deleteUserById(id);
     }
 
-    @GetMapping("/rec/{userId}")
+    @GetMapping("/{userId}/recommendations")
     public List<Film> recomend(@PathVariable int userId) {
-      return userService.recomendation(userId);
+      return userService.recommendation(userId);
     }
 
     @GetMapping("/{id}/feed")
