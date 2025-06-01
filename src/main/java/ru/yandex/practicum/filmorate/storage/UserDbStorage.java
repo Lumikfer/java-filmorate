@@ -87,11 +87,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        if (getUserById(userId) == null || getUserById(friendId) == null) {
-            throw new NotFoundException("One or both users not found");
-        }
-
-        String sql = "MERGE INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
+        String sql = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, friendId);
     }
 
@@ -99,6 +95,15 @@ public class UserDbStorage implements UserStorage {
         String sql = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
         jdbcTemplate.update(sql, userId, friendId);
     }
+
+    @Override
+    public Boolean chekFriendsForUser(int userId, int friendId) {
+        String checkSql = "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, userId, friendId);
+
+        return count != null && count > 0;
+    }
+
 
     @Override
     public Collection<User> getUsers() {

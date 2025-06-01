@@ -55,7 +55,7 @@ public class ReviewsController {
     @DeleteMapping("/{id}/like/{userId}")
     public void removeLike(@PathVariable("id") int reviewId,
                            @PathVariable int userId) {
-        reviewsService.removeLikeAndDislike(reviewId, userId);
+        reviewsService.removeLike(reviewId, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")

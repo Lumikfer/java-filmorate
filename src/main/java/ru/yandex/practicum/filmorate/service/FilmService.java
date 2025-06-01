@@ -45,7 +45,7 @@ public class FilmService {
 
     public Film updateFilm(Film film) {
         validateFilm(film);
-        Film film1 = getFilmOrThrow(film.getId());
+        Film film1 = filmStorage.getFilmById(film.getId());
         return filmStorage.updateFilm(film);
     }
 
@@ -62,28 +62,26 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        Film film = getFilmOrThrow(filmId);
+        Film film = filmStorage.getFilmById(filmId);
         User user = userStorage.getUserById(userId);
-        if (user == null) {
-            throw new NotFoundException("User not found with id: " + userId);
-        }
-        filmStorage.addLike(filmId, userId);
         activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
+
+        if (filmStorage.chekLikeForFilm(filmId, userId)) {
+            return;
+        }
+
+        filmStorage.addLike(filmId, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        getFilmOrThrow(filmId);
-        getUserOrThrow(userId);
-        filmStorage.removeLike(filmId, userId);
+        Film film = filmStorage.getFilmById(filmId);
+        User user = userStorage.getUserById(userId);
         activityLogStorage.addActivity(userId, "LIKE", "REMOVE", filmId);
-    }
 
-    private Film getFilmOrThrow(int id) {
-        Film film = filmStorage.getFilmById(id);
-        if (film == null) {
-            throw new NotFoundException("Film not found with id: " + id);
+        if (!filmStorage.chekLikeForFilm(filmId, userId)) {
+            return;
         }
-        return film;
+        filmStorage.removeLike(filmId, userId);
     }
 
     public List<Film> getPopularFilms(int count, Integer year, Integer genreId) {
@@ -113,16 +111,6 @@ public class FilmService {
                 .sorted(Comparator.comparingInt((Film film) -> film.getLike().size()).reversed())
                 .collect(Collectors.toList());
     }
-
-
-    private User getUserOrThrow(int id) {
-        try {
-            return userStorage.getUserById(id);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found", e);
-        }
-    }
-
 
     public List<Film> searchFilms(String query, String by) {
         if (query == null || query.isBlank()) {

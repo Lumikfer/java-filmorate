@@ -175,18 +175,17 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
         }
 
-        String checkSql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
-        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
-
-        if (count != null && count > 0) {
-            return;
-            //throw new ValidationException("Лайк уже поставлен.");
-        }
-
-
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
         film.getLike().add(userId);
+    }
+
+    @Override
+    public Boolean chekLikeForFilm(int filmId, int userId) {
+        String checkSql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
+
+        return count != null && count > 0;
     }
 
 
@@ -202,10 +201,7 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-        int rowsDeleted = jdbcTemplate.update(sql, filmId, userId);
-        if (rowsDeleted == 0) {
-            throw new NotFoundException("Лайк не найден.");
-        }
+        jdbcTemplate.update(sql, filmId, userId);
     }
 
     public List<Integer> getLikesForFilm(int filmId) {

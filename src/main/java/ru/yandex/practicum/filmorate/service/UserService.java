@@ -34,15 +34,17 @@ public class UserService {
         return userStorage.addUser(user);
     }
 
-    public List<User> addFriend(int userId, int friendId) {
-        getUserOrThrow(userId);
-        getUserOrThrow(friendId);
+    public void addFriend(int userId, int friendId) {
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+        activityLogStorage.addActivity(userId, "FRIEND", "ADD", friendId);
         if (userId == friendId) {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
+        if (userStorage.chekFriendsForUser(userId, friendId)) {
+            return;
+        }
         userStorage.addFriend(userId, friendId);
-        activityLogStorage.addActivity(userId, "FRIEND", "ADD", friendId);
-        return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
     }
 
     public User getUserOrThrow(int id) {
@@ -101,9 +103,12 @@ public class UserService {
     public void deleteFriend(int userId, int friendId) {
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
-
-        userStorage.removeFriend(userId, friendId);
         activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
+
+        if (!userStorage.chekFriendsForUser(userId, friendId)) {
+            return;
+        }
+        userStorage.removeFriend(userId, friendId);
     }
 
     public List<Film> recommendation(int userId) {

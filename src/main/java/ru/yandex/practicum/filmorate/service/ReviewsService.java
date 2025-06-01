@@ -39,14 +39,14 @@ public class ReviewsService {
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
         reviewsDBStorage.updateRew(existing);
-        activityLogStorage.addActivity(review.getUserId(), "REVIEW", "UPDATE", review.getReviewId());
+        activityLogStorage.addActivity(existing.getUserId(), "REVIEW", "UPDATE", existing.getReviewId());
         return existing;
     }
 
     public void deleteReview(int id) {
         Reviews review = reviewsDBStorage.getRewById(id);
+        activityLogStorage.addActivity(review.getUserId(), "REVIEW", "REMOVE", id);
         reviewsDBStorage.delRewById(review);
-        activityLogStorage.addActivity(review.getUserId(), "REVIEW", "REMOVE", review.getReviewId());
     }
 
     public Reviews getReviewById(int id) {
@@ -80,19 +80,21 @@ public class ReviewsService {
     public void addLike(int reviewId, int userId) {
         userDbStorage.getUserById(userId);
         reviewsDBStorage.addUseful(reviewId, userId);
-        activityLogStorage.addActivity(userId, "LIKE", "ADD", reviewId);
     }
 
     public void removeLikeAndDislike(int reviewId, int userId) {
         userDbStorage.getUserById(userId);
         reviewsDBStorage.deleteLikeForReview(reviewId, userId);
-        activityLogStorage.addActivity(userId, "LIKE", "REMOVE", reviewId);
+    }
+
+    public void removeLike(int reviewId, int userId) {
+        userDbStorage.getUserById(userId);
+        reviewsDBStorage.deleteLikeForReview(reviewId, userId);
     }
 
     public void addDislike(int reviewId, int userId) {
         userDbStorage.getUserById(userId);
         reviewsDBStorage.delUseful(reviewId, userId);
-        activityLogStorage.addActivity(userId, "LIKE", "ADD", reviewId);
     }
 
     private void validateUserAndFilm(int userId, int filmId) {
