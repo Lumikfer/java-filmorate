@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -51,14 +51,7 @@ public class UserDbStorage implements UserStorage {
         if (users.isEmpty()) {
             throw new NotFoundException("Такого пользователя нет");
         } else {
-            User user = users.get(0);
-            List<User> friends = getFriends(user.getId());
-            Set<Integer> frinedsId = new HashSet<>();
-            for (User user1 : friends) {
-                frinedsId.add(user1.getId());
-            }
-            user.setFriends(frinedsId);
-            return user;
+            return users.getFirst();
         }
     }
 
@@ -105,7 +98,6 @@ public class UserDbStorage implements UserStorage {
         return count != null && count > 0;
     }
 
-
     @Override
     public Collection<User> getUsers() {
 
@@ -114,15 +106,25 @@ public class UserDbStorage implements UserStorage {
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
+        User user = new User();
+        user.setId(rs.getInt("user_id"));
+        user.setEmail(rs.getString("email"));
+        user.setLogin(rs.getString("login"));
+        user.setName(rs.getString("name"));
+        user.setBirthday(rs.getDate("birthday").toLocalDate());
+        user.setFriends(getFriendsId(rs.getInt("user_id")));
+        return user;
+    }
 
-        return User.builder()
-                .id(rs.getInt("user_id"))
-                .email(rs.getString("email"))
-                .login(rs.getString("login"))
-                .name(rs.getString("name"))
-                .birthday(rs.getDate("birthday")
-                        .toLocalDate()).build();
-
+    public Set<Integer> getFriendsId(int userId) {
+        String sql = """
+                SELECT friend_id
+                FROM friends
+                WHERE user_id = ?
+                ORDER BY friend_id
+                """;
+        List<Integer> friendsId = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("friend_id"), userId);
+        return new HashSet<Integer>(friendsId);
     }
 
     @Override

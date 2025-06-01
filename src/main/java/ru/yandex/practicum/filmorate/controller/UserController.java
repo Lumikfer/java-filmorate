@@ -44,12 +44,7 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable int id) {
-        return userService.getFriendByIdUser(id).stream()
-                .map(user -> {
-                    user.setFriends(null);
-                    return user;
-                })
-                .collect(Collectors.toList());
+        return userService.getFriendByIdUser(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")

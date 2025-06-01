@@ -1,6 +1,7 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.director;
 
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,4 +20,5 @@ public interface DirectorStorage {
 
     List<Director> getDirectorsByFilmId(int filmId);
 
+    void insertInFilmDirectorTable(Film film);
 }

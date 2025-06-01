@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,7 +26,6 @@ public class DirectorService {
         return directorStorage.createDirector(director);
     }
 
-
     public Director updateDirector(Director director) {
         log.info("Обновление режиссера с ID: {}", director.getId());
 
@@ -37,7 +36,6 @@ public class DirectorService {
         return directorStorage.updateDirector(director);
     }
 
-
     public Director getDirectorOrThrow(Integer id) {
         Director director = directorStorage.getDirectorById(id);
         if (director == null) {
@@ -46,17 +44,14 @@ public class DirectorService {
         return director;
     }
 
-
     public Collection<Director> getAllDirectors() {
         return directorStorage.getAllDirectors();
     }
-
 
     public void deleteDirectorById(Integer id) {
         directorStorage.deleteDirectorById(id);
         log.info("Режиссер с ID {} успешно удален", id);
     }
-
 
     public List<Director> getDirectorsByFilmId(int filmId) {
         return directorStorage.getDirectorsByFilmId(filmId);

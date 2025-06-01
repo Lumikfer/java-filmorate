@@ -8,9 +8,9 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.ActivityLog;
-import ru.yandex.practicum.filmorate.storage.ActivityLogStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.activityLog.ActivityLogStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,8 +34,8 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
         activityLogStorage.addActivity(userId, "FRIEND", "ADD", friendId);
         if (userId == friendId) {
             throw new ValidationException("Нельзя добавить себя в друзья");
@@ -55,11 +55,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-
-        getUserOrThrow(user.getId());
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
+        userStorage.getUserById(user.getId());
         return userStorage.updateUser(user);
     }
 
@@ -71,17 +67,9 @@ public class UserService {
         userStorage.deleteUserById(id);
     }
 
-    public List<User> getFriendByIdUser(int id) {
-        getUserOrThrow(id);
-        List<User> friends = new ArrayList<>();
-        for (User user : userStorage.getFriends(id)) {
-            if (user == null) {
-                throw new NotFoundException("User not found with id: " + id);
-            } else {
-                friends.add(user);
-            }
-        }
-        return friends;
+    public List<User> getFriendByIdUser(int userId) {
+        userStorage.getUserById(userId);
+        return userStorage.getFriends(userId);
     }
 
     public List<User> getMutualFriends(int id1, int id2) {
@@ -89,8 +77,8 @@ public class UserService {
     }
 
     public void deleteFriend(int userId, int friendId) {
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
         activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
 
         if (!userStorage.chekFriendsForUser(userId, friendId)) {
@@ -144,10 +132,7 @@ public class UserService {
     }
 
     public List<ActivityLog> getActivityLogForUserId(int id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new NotFoundException("User not found with id: " + id);
-        }
+        userStorage.getUserById(id);
         return activityLogStorage.getFeedForUser(id);
     }
 
