@@ -25,7 +25,6 @@ public class UserService {
     private final ActivityLogStorage activityLogStorage;
 
 
-
     public User addUser(User user) {
 
         if (user.getName() == null || user.getName().isBlank()) {
@@ -66,17 +65,6 @@ public class UserService {
 
     public Collection<User> getUsers() {
         return userStorage.getUsers();
-    }
-
-    public List<User> approveFriend(int userId, int friendId) {
-
-        if (userStorage.getUserById(userId).getFriends().contains(friendId)) {
-            addFriend(userId, friendId);
-            userStorage.updateUser(userStorage.getUserById(userId));
-            userStorage.updateUser(userStorage.getUserById(friendId));
-            return List.of(userStorage.getUserById(userId), userStorage.getUserById(friendId));
-        }
-        return List.of(userStorage.getUserById(userId));
     }
 
     public void deleteUserById(int id) {

@@ -55,8 +55,7 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(
             @PathVariable int id,
-            @PathVariable int otherId
-    ) {
+            @PathVariable int otherId) {
         return userService.getMutualFriends(id, otherId).stream()
                 .map(user -> {
                     user.setFriends(null);
@@ -68,8 +67,7 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     public void removeFriend(
             @PathVariable int id,
-            @PathVariable int friendId
-    ) {
+            @PathVariable int friendId) {
         userService.deleteFriend(id, friendId);
     }
 
@@ -81,7 +79,7 @@ public class UserController {
 
     @GetMapping("/{userId}/recommendations")
     public List<Film> recomend(@PathVariable int userId) {
-      return userService.recommendation(userId);
+        return userService.recommendation(userId);
     }
 
     @GetMapping("/{id}/feed")

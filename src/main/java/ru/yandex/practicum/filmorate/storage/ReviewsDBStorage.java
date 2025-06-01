@@ -117,20 +117,6 @@ public class ReviewsDBStorage implements ReviewsStorage {
                 .build();
     }
 
-    /*
-    public void chekPositive(int reviewId) {
-        String positive = "false";
-        String sql = "SELECT * FROM reviews WHERE review_id = ?";
-        List<Reviews> reviews = jdbcTemplate.query(sql, this::mapRowToReview, reviewId);
-        Reviews review = reviews.getFirst();
-        if (review.getUseful() > 0) {
-            positive = "true";
-        }
-        sql = "UPDATE reviews SET is_positive = " + positive + " WHERE review_id = ? ";
-        jdbcTemplate.update(sql, reviewId);
-    }
-     */
-
     private void chekUsefulCountInReviewId(int reviewId) {
         String sqlUseful = "SELECT SUM(review_likes.useful) AS likes_count " +
                 "FROM review_likes " +
@@ -147,7 +133,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
         }
 
         String sql = "UPDATE reviews SET useful = ? WHERE review_id = ?";
-        jdbcTemplate.update(sql,likesCount, reviewId);
+        jdbcTemplate.update(sql, likesCount, reviewId);
     }
 
     public Boolean searchReviewForUserIdAndFilmId(int userId, int filmId) {

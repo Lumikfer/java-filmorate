@@ -66,7 +66,8 @@ public class UserDbStorage implements UserStorage {
     public User updateUser(User user) {
 
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
-        int rowsUpdated = jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
+        int rowsUpdated = jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(),
+                user.getBirthday(), user.getId());
 
         if (rowsUpdated == 0) {
             throw new RuntimeException("User not found with id: " + user.getId());
@@ -134,7 +135,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getCommonFriends(int userId, int otherId) {
 
-        String sql = "SELECT u.* FROM users u " + "JOIN friends f1 ON u.user_id = f1.friend_id " + "JOIN friends f2 ON u.user_id = f2.friend_id " + "WHERE f1.user_id = ? AND f2.user_id = ?";
+        String sql = "SELECT u.* FROM users u " + "JOIN friends f1 ON u.user_id = f1.friend_id " + "JOIN friends f2" +
+                " ON u.user_id = f2.friend_id " + "WHERE f1.user_id = ? AND f2.user_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
     }
 }

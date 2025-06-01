@@ -32,7 +32,7 @@ public class ActivityLogDbStorage implements ActivityLogStorage {
                 eventType,
                 operation,
                 entityId,
-                LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() //пришлось сделать так, постман тест хочет лонг значение а не время
+                LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
 
         );
     }
