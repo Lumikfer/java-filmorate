@@ -21,31 +21,26 @@ public class DirectorController {
         return directorService.createDirector(director);
     }
 
-
     @PutMapping
     public Director updateDirector(@RequestBody Director director) {
         return directorService.updateDirector(director);
     }
-
 
     @GetMapping("/{id}")
     public Director getDirectorById(@PathVariable Integer id) {
         return directorService.getDirectorOrThrow(id);
     }
 
-
     @GetMapping
     public List<Director> getAllDirectors() {
         return (List<Director>) directorService.getAllDirectors();
     }
-
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDirector(@PathVariable Integer id) {
         directorService.deleteDirectorById(id);
     }
-
 
     @GetMapping("/{filmId}/films")
     public List<Director> getDirectorsByFilmId(@PathVariable int filmId) {

@@ -22,8 +22,8 @@ import java.util.*;
 @Primary
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
-
     private final JdbcTemplate jdbcTemplate;
+    private static final int ZERO = 0;
 
 
     @Override
@@ -138,13 +138,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteFilmById(int id) {
-        String checkSql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
-        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, id);
-
-        if (count == 0) {
-            throw new NotFoundException("Film with id " + id + " not found");
-        }
-
         String sql = "DELETE FROM films WHERE film_id = ?";
         jdbcTemplate.update(sql, id);
     }
@@ -160,9 +153,8 @@ public class FilmDbStorage implements FilmStorage {
         String checkSql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
 
-        return count != null && count > 0;
+        return count != null && count > ZERO;
     }
-
 
     @Override
     public void removeLike(int filmId, int userId) {

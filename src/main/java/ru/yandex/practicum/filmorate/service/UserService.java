@@ -4,7 +4,6 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.ActivityLog;
@@ -46,12 +45,8 @@ public class UserService {
         userStorage.addFriend(userId, friendId);
     }
 
-    public User getUserOrThrow(int id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new NotFoundException("User not found with id: " + id);
-        }
-        return user;
+    public User getUserById(int id) {
+        return userStorage.getUserById(id);
     }
 
     public User updateUser(User user) {
@@ -72,7 +67,9 @@ public class UserService {
         return userStorage.getFriends(userId);
     }
 
-    public List<User> getMutualFriends(int id1, int id2) {
+    public List<User> getCommonFriends(int id1, int id2) {
+        userStorage.getUserById(id1);
+        userStorage.getUserById(id2);
         return userStorage.getCommonFriends(id1, id2);
     }
 

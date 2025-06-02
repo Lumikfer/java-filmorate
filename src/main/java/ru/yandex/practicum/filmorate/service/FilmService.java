@@ -70,6 +70,7 @@ public class FilmService {
     }
 
     public void deleteFilmById(int id) {
+        filmStorage.getFilmById(id);
         filmStorage.deleteFilmById(id);
     }
 
@@ -110,7 +111,7 @@ public class FilmService {
         if (film.getMpa() != null) {
             if (film.getMpa().getId() > MPA_MAX || film.getMpa().getId() < MPA_MIN) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "МПА не может быть меньше " + MPA_MIN +
-                                                                                        " и больше " + MPA_MAX);
+                        " и больше " + MPA_MAX);
             }
         }
         if (film.getGenres() != null) {

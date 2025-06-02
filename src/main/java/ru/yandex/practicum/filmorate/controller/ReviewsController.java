@@ -40,9 +40,8 @@ public class ReviewsController {
     }
 
     @GetMapping
-    public List<Reviews> getPopularReviews(
-            @RequestParam(required = false) Integer filmId,
-            @RequestParam(defaultValue = "10") int count) {
+    public List<Reviews> getPopularReviews(@RequestParam(required = false) Integer filmId,
+                                           @RequestParam(defaultValue = "10") int count) {
         return reviewsService.getPopularReviews(filmId, count);
     }
 
@@ -55,7 +54,7 @@ public class ReviewsController {
     @DeleteMapping("/{id}/like/{userId}")
     public void removeLike(@PathVariable("id") int reviewId,
                            @PathVariable int userId) {
-        reviewsService.removeLike(reviewId, userId);
+        reviewsService.removeLikeAndDislike(reviewId, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")

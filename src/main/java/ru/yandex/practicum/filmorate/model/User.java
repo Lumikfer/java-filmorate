@@ -28,11 +28,4 @@ public class User {
 
     private Set<Integer> friends = new HashSet<>();
 
-    public void addFriend(int id) {
-        friends.add(id);
-    }
-
-    public Set<Integer> getFriends() {
-        return friends != null ? friends : new HashSet<>();
-    }
 }

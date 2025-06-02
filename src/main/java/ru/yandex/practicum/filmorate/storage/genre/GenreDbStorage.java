@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
-
     private final JdbcTemplate jdbcTemplate;
 
+
     @Override
-    public Collection<Genre> getAllGenres() {
+    public List<Genre> getAllGenres() {
         String sql = "SELECT * FROM genres ORDER BY genre_id ASC";
         return jdbcTemplate.query(sql, this::mapRowToGenre);
     }
@@ -47,12 +47,14 @@ public class GenreDbStorage implements GenreStorage {
                 "JOIN genres g ON fg.genre_id = g.genre_id " +
                 "WHERE fg.film_id = ? " +
                 "ORDER BY g.genre_id ASC";
-        return new ArrayList<Genre>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
+        return new ArrayList<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
     }
 
     private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
-
-        return new Genre(rs.getInt("genre_id"), rs.getString("name"));
+        return new Genre(
+                rs.getObject("genre_id", Integer.class),
+                rs.getString("name")
+        );
     }
 
     public void insertInFilmGenreTable(Film film) {

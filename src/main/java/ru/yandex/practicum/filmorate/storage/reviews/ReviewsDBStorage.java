@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.reviews;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -14,12 +15,13 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@RequiredArgsConstructor
 public class ReviewsDBStorage implements ReviewsStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final static int ADD_USEFUL = 1;
+    private final static int REMOVE_USEFUL = -1;
+    private final static int EMPTY_USEFUL = 0;
 
-    public ReviewsDBStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public List<Reviews> getRew() {
@@ -68,8 +70,8 @@ public class ReviewsDBStorage implements ReviewsStorage {
         String sql = "INSERT INTO review_likes (review_id, user_id, useful) " +
                 "VALUES (?, ?, ?)";
 
-        jdbcTemplate.update(sql, reviewId, userId, 1);
-        chekUsefulCountInReviewId(reviewId);
+        jdbcTemplate.update(sql, reviewId, userId, ADD_USEFUL);
+        checkUsefulCountInReviewId(reviewId);
     }
 
     @Override
@@ -80,14 +82,14 @@ public class ReviewsDBStorage implements ReviewsStorage {
         String sql = "INSERT INTO review_likes (review_id, user_id, useful) " +
                 "VALUES (?, ?, ?)";
 
-        jdbcTemplate.update(sql, reviewId, userId, -1);
-        chekUsefulCountInReviewId(reviewId);
+        jdbcTemplate.update(sql, reviewId, userId, REMOVE_USEFUL);
+        checkUsefulCountInReviewId(reviewId);
     }
 
     public void deleteLikeForReview(int reviewId, int userId) {
         String sqlDel = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
         jdbcTemplate.update(sqlDel, reviewId, userId);
-        chekUsefulCountInReviewId(reviewId);
+        checkUsefulCountInReviewId(reviewId);
     }
 
     @Override
@@ -117,7 +119,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
                 .build();
     }
 
-    private void chekUsefulCountInReviewId(int reviewId) {
+    private void checkUsefulCountInReviewId(int reviewId) {
         String sqlUseful = "SELECT SUM(review_likes.useful) AS likes_count " +
                 "FROM review_likes " +
                 "WHERE review_id = ? " +
@@ -127,7 +129,7 @@ public class ReviewsDBStorage implements ReviewsStorage {
         Integer likesCount;
 
         if (likesCounts.isEmpty()) {
-            likesCount = 0;
+            likesCount = EMPTY_USEFUL;
         } else {
             likesCount = likesCounts.getFirst();
         }

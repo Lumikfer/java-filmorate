@@ -124,7 +124,7 @@ public class UserDbStorage implements UserStorage {
                 ORDER BY friend_id
                 """;
         List<Integer> friendsId = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("friend_id"), userId);
-        return new HashSet<Integer>(friendsId);
+        return new HashSet<>(friendsId);
     }
 
     @Override
@@ -137,8 +137,12 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getCommonFriends(int userId, int otherId) {
 
-        String sql = "SELECT u.* FROM users u " + "JOIN friends f1 ON u.user_id = f1.friend_id " + "JOIN friends f2" +
-                " ON u.user_id = f2.friend_id " + "WHERE f1.user_id = ? AND f2.user_id = ?";
+        String sql = """ 
+                SELECT u.* FROM users u
+                JOIN friends f1 ON u.user_id = f1.friend_id
+                JOIN friends f2 ON u.user_id = f2.friend_id
+                WHERE f1.user_id = ? AND f2.user_id = ?
+                """;
         return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
     }
 }

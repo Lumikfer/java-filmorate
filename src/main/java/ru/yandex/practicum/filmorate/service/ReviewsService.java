@@ -34,7 +34,6 @@ public class ReviewsService {
 
     public Reviews updateReview(Reviews review) {
         validateUserAndFilm(review.getUserId(), review.getFilmId());
-        validateReviewExists(review.getReviewId());
         Reviews existing = reviewsDBStorage.getRewById(review.getReviewId());
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
@@ -50,25 +49,18 @@ public class ReviewsService {
     }
 
     public Reviews getReviewById(int id) {
-        Reviews review = reviewsDBStorage.getRewById(id);
-        if (review == null) {
-            throw new NotFoundException("Review not found");
-        }
-        return review;
+        return reviewsDBStorage.getRewById(id);
     }
 
     public List<Reviews> getPopularReviews(Integer filmId, int count) {
         if (filmId != null) {
-            if (filmDbStorage.getFilmById(filmId) == null) {
-                throw new NotFoundException("Film not found");
-            }
+            filmDbStorage.getFilmById(filmId);
             return reviewsDBStorage.getReviewsByFilmId(filmId)
                     .stream()
                     .sorted(Comparator.comparingInt(Reviews::getUseful).reversed())
                     .limit(count)
                     .collect(Collectors.toList());
         }
-
 
         return reviewsDBStorage.getRew()
                 .stream()
@@ -87,11 +79,6 @@ public class ReviewsService {
         reviewsDBStorage.deleteLikeForReview(reviewId, userId);
     }
 
-    public void removeLike(int reviewId, int userId) {
-        userDbStorage.getUserById(userId);
-        reviewsDBStorage.deleteLikeForReview(reviewId, userId);
-    }
-
     public void addDislike(int reviewId, int userId) {
         userDbStorage.getUserById(userId);
         reviewsDBStorage.delUseful(reviewId, userId);
@@ -101,11 +88,4 @@ public class ReviewsService {
         userDbStorage.getUserById(userId);
         filmDbStorage.getFilmById(filmId);
     }
-
-    private void validateReviewExists(int id) {
-        if (reviewsDBStorage.getRewById(id) == null) {
-            throw new NotFoundException("Review not found");
-        }
-    }
-
 }

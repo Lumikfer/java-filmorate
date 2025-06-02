@@ -23,11 +23,4 @@ public class Reviews {
 
     int useful;
 
-    public void incrementUseful() {
-        this.useful++;
-    }
-
-    public void decrementUseful() {
-        this.useful--;
-    }
 }

@@ -35,8 +35,4 @@ public class Film {
 
     private Set<Integer> like = new HashSet<>();
 
-    public Integer countLike(Set<Integer> like) {
-        return like.size();
-    }
-
 }

@@ -16,8 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ActivityLogDbStorage implements ActivityLogStorage {
-
     private final JdbcTemplate jdbcTemplate;
+
 
     @Override
     public void addActivity(int userId, String eventType, String operation, int entityId) {
