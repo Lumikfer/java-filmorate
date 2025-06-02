@@ -21,6 +21,7 @@ public class ReviewsService {
     private final FilmDbStorage filmDbStorage;
     private final ActivityLogStorage activityLogStorage;
 
+
     public Reviews createReview(Reviews review) {
         validateUserAndFilm(review.getUserId(), review.getFilmId());
         if (reviewsDBStorage.searchReviewForUserIdAndFilmId(review.getUserId(), review.getFilmId())) {

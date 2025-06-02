@@ -12,6 +12,7 @@ import java.util.List;
 public class GenreService {
     private final GenreStorage genreStorage;
 
+
     public Genre getGenreById(Integer id) {
         return genreStorage.getGenreById(id);
     }
