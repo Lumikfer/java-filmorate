@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -21,6 +21,9 @@ public interface FilmStorage {
 
     void removeLike(int filmId, int userId);
 
-    List<Film> getPopularFilms(int count);
+    List<Film> getPopularFilms(int count, Integer year, Integer genreId);
 
+    List<Film> getFilmsByDirectorId(int directorId, String sortBy);
+
+    Boolean chekLikeForFilm(int filmId, int userId);
 }

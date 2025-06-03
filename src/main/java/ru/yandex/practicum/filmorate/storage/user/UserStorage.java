@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.user;
 
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -25,4 +25,5 @@ public interface UserStorage {
 
     List<User> getCommonFriends(int userId, int otherId);
 
+    Boolean chekFriendsForUser(int userId, int friendId);
 }
