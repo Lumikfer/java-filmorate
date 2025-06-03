@@ -18,9 +18,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ReviewsDBStorage implements ReviewsStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final static int ADD_USEFUL = 1;
-    private final static int REMOVE_USEFUL = -1;
-    private final static int EMPTY_USEFUL = 0;
+    private static final int ADD_USEFUL = 1;
+    private static final int REMOVE_USEFUL = -1;
+    private static final int EMPTY_USEFUL = 0;
 
 
     @Override

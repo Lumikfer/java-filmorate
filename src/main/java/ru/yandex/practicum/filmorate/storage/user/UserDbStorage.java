@@ -137,7 +137,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getCommonFriends(int userId, int otherId) {
 
-        String sql = """ 
+        String sql = """
                 SELECT u.* FROM users u
                 JOIN friends f1 ON u.user_id = f1.friend_id
                 JOIN friends f2 ON u.user_id = f2.friend_id
