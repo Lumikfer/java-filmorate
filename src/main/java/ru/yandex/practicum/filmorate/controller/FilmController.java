@@ -1,19 +1,19 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
+@Validated
 @RestController
 @RequestMapping("/films")
 @Slf4j
@@ -40,59 +40,48 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable int id, @PathVariable int userId) {
+    public void addLike(@PathVariable Integer id, @PathVariable Integer userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+    public void removeLike(@PathVariable Integer id, @PathVariable Integer userId) {
         filmService.deleteLike(id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilmByGenre(@RequestParam(defaultValue = "10") int count,
-                                            @RequestParam(required = false) Integer year,
-                                            @RequestParam(required = false) Integer genreId) {
+    public List<Film> getPopularFilmByGenre(@RequestParam(defaultValue = "10") Integer count,
+                                            @Positive @RequestParam(required = false) Integer year,
+                                            @Positive @RequestParam(required = false) Integer genreId) {
         return filmService.getPopularFilms(count, year, genreId);
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable int id) {
+    public Film getFilmById(@PathVariable Integer id) {
         return filmService.getFilmById(id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteFilm(@PathVariable int id) {
+    public void deleteFilm(@PathVariable Integer id) {
         filmService.deleteFilmById(id);
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonFilms(@RequestParam int userId,
-                                     @RequestParam int friendId) {
+    public List<Film> getCommonFilms(@RequestParam Integer userId,
+                                     @RequestParam Integer friendId) {
         return filmService.getCommonFilms(userId, friendId);
     }
 
     @GetMapping("/search")
     public List<Film> searchFilms(@RequestParam String query,
                                   @RequestParam(defaultValue = "title,director") String by) {
-        if (query == null || query.isBlank()) {
-            throw new ValidationException("Query parameter cannot be empty");
-        }
 
-        String normalizedBy = by.trim().toLowerCase();
-        Set<String> validCriteria = Set.of("title", "director");
-
-        if (!Arrays.stream(normalizedBy.split(","))
-                .anyMatch(validCriteria::contains)) {
-            throw new ValidationException("Invalid search criteria. Use 'title', 'director' or both");
-        }
-
-        return filmService.searchFilms(query, normalizedBy);
+        return filmService.searchFilms(query, by);
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getFilmsByDirector(@PathVariable int directorId,
+    public List<Film> getFilmsByDirector(@PathVariable Integer directorId,
                                          @RequestParam(name = "sortBy", defaultValue = "year") String sortBy) {
         return filmService.getFilmsByDirectorId(directorId, sortBy);
     }
