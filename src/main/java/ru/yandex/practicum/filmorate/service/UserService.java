@@ -25,7 +25,6 @@ public class UserService {
 
 
     public User addUser(User user) {
-
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -35,13 +34,13 @@ public class UserService {
     public void addFriend(int userId, int friendId) {
         userStorage.getUserById(userId);
         userStorage.getUserById(friendId);
-        activityLogStorage.addActivity(userId, "FRIEND", "ADD", friendId);
         if (userId == friendId) {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
         if (userStorage.chekFriendsForUser(userId, friendId)) {
             return;
         }
+        activityLogStorage.addActivity(userId, "FRIEND", "ADD", friendId);
         userStorage.addFriend(userId, friendId);
     }
 
@@ -76,11 +75,11 @@ public class UserService {
     public void deleteFriend(int userId, int friendId) {
         userStorage.getUserById(userId);
         userStorage.getUserById(friendId);
-        activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
 
         if (!userStorage.chekFriendsForUser(userId, friendId)) {
             return;
         }
+        activityLogStorage.addActivity(userId, "FRIEND", "REMOVE", friendId);
         userStorage.removeFriend(userId, friendId);
     }
 

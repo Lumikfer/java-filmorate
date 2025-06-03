@@ -27,10 +27,6 @@ public class DirectorService {
 
     public Director updateDirector(Director director) {
         log.info("Обновление режиссера с ID: {}", director.getId());
-
-        if (director.getName() == null || director.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Имя режиссера не может быть пустым");
-        }
         getDirectorOrThrow(director.getId());
         return directorStorage.updateDirector(director);
     }

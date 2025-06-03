@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -143,8 +144,16 @@ public class FilmService {
     }
 
     public List<Film> searchFilms(String query, String by) {
-        if (query == null || query.isBlank()) {
-            return Collections.emptyList();
+        if (query.isBlank()) {
+            throw new ValidationException("Query parameter cannot be empty");
+        }
+
+        String normalizedBy = by.trim().toLowerCase();
+        Set<String> validCriteria = Set.of("title", "director");
+
+        if (!Arrays.stream(normalizedBy.split(","))
+                .anyMatch(validCriteria::contains)) {
+            throw new ValidationException("Invalid search criteria. Use 'title', 'director' or both");
         }
 
         String queryLower = query.toLowerCase();
@@ -179,8 +188,14 @@ public class FilmService {
     }
 
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
+        String orderByClause = switch (sortBy.toLowerCase()) {
+            case "year" -> "f.release_date";
+            case "likes" -> "like_count DESC";
+            default -> throw new IllegalArgumentException("Неподдерживаемый параметр сортировки: " + sortBy);
+        };
+
         log.debug("Получение фильмов режисера с ID: {} с сортировкой по '{}'", directorId, sortBy);
-        List<Film> films = filmStorage.getFilmsByDirectorId(directorId, sortBy);
+        List<Film> films = filmStorage.getFilmsByDirectorId(directorId, orderByClause);
         if (films.isEmpty()) {
             throw new NotFoundException("Фильмы не найдены");
         }

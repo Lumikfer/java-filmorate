@@ -204,12 +204,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
-        String orderByClause = switch (sortBy.toLowerCase()) {
-            case "year" -> "f.release_date";
-            case "likes" -> "like_count DESC";
-            default -> throw new IllegalArgumentException("Неподдерживаемый параметр сортировки: " + sortBy);
-        };
+    public List<Film> getFilmsByDirectorId(int directorId, String orderByClause) {
 
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.name AS mpa_name, " +
