@@ -23,8 +23,6 @@ public interface FilmStorage {
 
     List<Film> getPopularFilms(int count, Integer year, Integer genreId);
 
-    List<Film> searchFilm(String string);
-
     List<Film> getFilmsByDirectorId(int directorId, String sortBy);
 
     Boolean chekLikeForFilm(int filmId, int userId);

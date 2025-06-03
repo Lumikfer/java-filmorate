@@ -203,13 +203,6 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapRowToFilm, params.toArray());
     }
 
-
-    @Override
-    public List<Film> searchFilm(String string) {
-
-        return List.of();
-    }
-
     @Override
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
         String orderByClause = switch (sortBy.toLowerCase()) {
