@@ -93,7 +93,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setDuration(rs.getInt("duration"));
         film.setMpa(getMpa(rs.getInt("mpa_id")));
         film.setGenres(getGenres(rs.getInt("film_id")));
-        film.setLike(getLikes(rs.getInt("film_id")));
+        film.setRating(getRatings(rs.getInt("film_id")));
         film.setDirectors(getDirectors(rs.getInt("film_id")));
         return film;
     }
@@ -131,9 +131,11 @@ public class FilmDbStorage implements FilmStorage {
         return directors;
     }
 
-    private Set<Integer> getLikes(int filmId) {
-        String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
-        return new HashSet<>(jdbcTemplate.queryForList(sql, Integer.class, filmId));
+    private Double getRatings(int filmId) {
+        String sql = "SELECT AVG(rating) AS average_rating FROM film_likes WHERE film_id = ?";
+        Double averageRating = jdbcTemplate.queryForObject(sql, new Object[]{filmId}, Double.class);
+
+        return averageRating != null ? averageRating : ZERO;
     }
 
     @Override
@@ -143,9 +145,9 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(int filmId, int userId) {
-        String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, filmId, userId);
+    public void addRating(int filmId, int userId, int rating) {
+        String sql = "INSERT INTO film_likes (film_id, user_id, rating) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, filmId, userId, rating);
     }
 
     @Override
@@ -195,7 +197,7 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 newsql +
                 "GROUP BY f.film_id " +
-                "ORDER BY COUNT(fl.user_id) DESC " +
+                "ORDER BY AVG(fl.rating) DESC " +
                 "LIMIT ?";
 
         params.add(count);

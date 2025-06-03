@@ -84,12 +84,14 @@ public class UserService {
         userStorage.removeFriend(userId, friendId);
     }
 
+    /*
+
     public List<Film> recommendation(int userId) {
         List<Film> allFilms = new ArrayList<>(filmStorage.getFilms());
         Collection<User> allUsers = userStorage.getUsers();
 
         Set<Integer> currentUserLikes = allFilms.stream()
-                .filter(f -> f.getLike().contains(userId))
+                .filter(f -> f.getRatings().contains(userId))
                 .map(Film::getId)
                 .collect(Collectors.toSet());
 
@@ -99,7 +101,7 @@ public class UserService {
             if (user.getId() == userId) continue;
 
             Set<Integer> userLikes = allFilms.stream()
-                    .filter(f -> f.getLike().contains(user.getId()))
+                    .filter(f -> f.getRatings().contains(user.getId()))
                     .map(Film::getId)
                     .collect(Collectors.toSet());
 
@@ -121,12 +123,14 @@ public class UserService {
 
         return allFilms.stream()
                 .filter(f ->
-                        f.getLike().contains(recommendedUserId) &&
-                                !f.getLike().contains(userId) &&
+                        f.getRatings().contains(recommendedUserId) &&
+                                !f.getRatings().contains(userId) &&
                                 !currentUserLikes.contains(f.getId())
                 )
                 .collect(Collectors.toList());
     }
+
+     */
 
     public List<ActivityLog> getActivityLogForUserId(int id) {
         userStorage.getUserById(id);

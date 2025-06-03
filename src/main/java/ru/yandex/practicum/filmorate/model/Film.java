@@ -6,10 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
 public class Film {
@@ -33,6 +30,6 @@ public class Film {
 
     private List<Director> directors = new ArrayList<>();
 
-    private Set<Integer> like = new HashSet<>();
+    private Double rating;
 
 }

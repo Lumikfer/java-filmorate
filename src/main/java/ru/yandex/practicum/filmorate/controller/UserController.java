@@ -63,11 +63,13 @@ public class UserController {
     public void deleteUser(@PathVariable int id) {
         userService.deleteUserById(id);
     }
-
+/*
     @GetMapping("/{userId}/recommendations")
     public List<Film> recomend(@PathVariable int userId) {
         return userService.recommendation(userId);
     }
+
+ */
 
     @GetMapping("/{id}/feed")
     public List<ActivityLog> getActivityLogForUserId(@PathVariable int id) {

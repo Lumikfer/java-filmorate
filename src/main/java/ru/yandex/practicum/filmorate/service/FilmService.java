@@ -74,17 +74,20 @@ public class FilmService {
         filmStorage.deleteFilmById(id);
     }
 
-    public void addLike(int filmId, int userId) {
+    public void addLike(int filmId, int userId, int rating) {
         Film film = filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
         activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
 
+        /*
         if (filmStorage.chekLikeForFilm(filmId, userId)) {
             return;
         }
 
-        filmStorage.addLike(filmId, userId);
-        film.getLike().add(userId);
+         */
+
+        filmStorage.addRating(filmId, userId, rating);
+        //film.getRatings().add(userId);
     }
 
     public void deleteLike(int filmId, int userId) {
@@ -110,7 +113,7 @@ public class FilmService {
         }
         if (film.getMpa() != null) {
             if (film.getMpa().getId() > MPA_MAX || film.getMpa().getId() < MPA_MIN) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "МПА не может быть меньше " + MPA_MIN +
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "МПА не может быть меньше " + MPA_MIN +
                         " и больше " + MPA_MAX);
             }
         }
@@ -118,18 +121,19 @@ public class FilmService {
             List<Genre> genres = film.getGenres();
             for (Genre genre : genres) {
                 if (genre.getId() > GENRE_MAX || genre.getId() < GENRE_MIN) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Не верный id Genre");
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не верный id Genre");
                 }
             }
         }
     }
 
+    /*
     public List<Film> getCommonFilms(int userId, int friendId) {
         List<Film> allFilms = new ArrayList<>(filmStorage.getFilms());
         List<Film> commonFilms = new ArrayList<>();
 
         for (Film film : allFilms) {
-            Set<Integer> likes = film.getLike();
+            HashMap<Integer, Integer> likes = film.getRatings();
             if (likes != null) {
                 if (likes.contains(userId) && likes.contains(friendId)) {
                     commonFilms.add(film);
@@ -138,9 +142,10 @@ public class FilmService {
         }
 
         return commonFilms.stream()
-                .sorted(Comparator.comparingInt((Film film) -> film.getLike().size()).reversed())
+                .sorted(Comparator.comparingInt((Film film) -> film.getRatings().size()).reversed())
                 .collect(Collectors.toList());
     }
+
 
     public List<Film> searchFilms(String query, String by) {
         if (query == null || query.isBlank()) {
@@ -173,10 +178,12 @@ public class FilmService {
                     return false;
                 })
                 .sorted(Comparator.comparingInt((Film film) ->
-                        film.getLike() != null ? -film.getLike().size() : 0
+                        film.getRatings() != null ? -film.getRatings().size() : 0
                 ))
                 .collect(Collectors.toList());
     }
+
+     */
 
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
         log.debug("Получение фильмов режисера с ID: {} с сортировкой по '{}'", directorId, sortBy);
