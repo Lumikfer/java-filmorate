@@ -222,7 +222,7 @@ public class FilmDbStorage implements FilmStorage {
 
         String sql = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, " +
                 "f.mpa_id, m.name AS mpa_name, " +
-                "COUNT(l.user_id) AS like_count " +
+                "AVG(l.rating) AS like_count " +
                 "FROM films f " +
                 "JOIN film_directors fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN film_likes l ON f.film_id = l.film_id " +

@@ -76,13 +76,14 @@ public class FilmController {
         filmService.deleteFilmById(id);
     }
 
-    /*
+
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam int userId,
                                      @RequestParam int friendId) {
         return filmService.getCommonFilms(userId, friendId);
     }
 
+    /*
     @GetMapping("/search")
     public List<Film> searchFilms(@RequestParam String query,
                                   @RequestParam(defaultValue = "title,director") String by) {
