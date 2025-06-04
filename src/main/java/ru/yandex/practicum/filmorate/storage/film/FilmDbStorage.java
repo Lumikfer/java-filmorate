@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.Search;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -104,6 +105,35 @@ public class FilmDbStorage implements FilmStorage {
                 -> new Mpa(rs.getInt("mpa_id"), rs.getString("name")), mpaId);
     }
 
+    public List<Film> searchFilmsByQuery(String query, String by) {
+        List<Object> params = new ArrayList<>();
+        StringBuilder sqlLine = new StringBuilder();
+        String queryLower = query.toLowerCase();
+        String searchTerm = "%" + queryLower + "%";
+
+        if (by.contains(Search.director.toString())) {
+            sqlLine.append("WHERE d.name ILIKE ? ");
+            params.add(searchTerm);
+        } else if (by.contains("all")) {
+            sqlLine.append("WHERE f.name ILIKE ? OR d.name ILIKE ? "); //запрос именно такой будет, так требуют постман тесты
+            params.add(searchTerm);
+            params.add(searchTerm);
+        } else {
+            sqlLine.append("WHERE f.name ILIKE ? ");
+            params.add(searchTerm);
+        }
+
+        String sql = "SELECT f.*, d.name AS director_name " +
+                "FROM films f " +
+                "LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+                sqlLine.toString() +
+                "GROUP BY f.film_id, d.name " +
+                "ORDER BY f.film_id DESC";
+
+        return jdbcTemplate.query(sql, params.toArray(), this::mapRowToFilm);
+    }
+
     private List<Genre> getGenres(int filmId) {
         String sql = """
                 SELECT g.genre_id, g.name
@@ -149,7 +179,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Boolean chekLikeForFilm(int filmId, int userId) {
+    public Boolean checkLikeForFilm(int filmId, int userId) {
         String checkSql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
 

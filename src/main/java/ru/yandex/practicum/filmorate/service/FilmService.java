@@ -9,7 +9,6 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.activityLog.ActivityLogStorage;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -80,7 +79,7 @@ public class FilmService {
         userStorage.getUserById(userId);
         activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
 
-        if (filmStorage.chekLikeForFilm(filmId, userId)) {
+        if (filmStorage.checkLikeForFilm(filmId, userId)) {
             return;
         }
 
@@ -93,7 +92,7 @@ public class FilmService {
         userStorage.getUserById(userId);
         activityLogStorage.addActivity(userId, "LIKE", "REMOVE", filmId);
 
-        if (!filmStorage.chekLikeForFilm(filmId, userId)) {
+        if (!filmStorage.checkLikeForFilm(filmId, userId)) {
             return;
         }
         filmStorage.removeLike(filmId, userId);
@@ -143,48 +142,20 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public List<Film> searchFilms(String query, String by) {
-        if (query.isBlank()) {
-            throw new ValidationException("Query parameter cannot be empty");
-        }
-
+    public List<Film> searchFilmsByQuery(String query, String by) {
         String normalizedBy = by.trim().toLowerCase();
-        Set<String> validCriteria = Set.of("title", "director");
-
+        List<String> validCriteria = List.of(Search.title.toString(), Search.director.toString());
         if (!Arrays.stream(normalizedBy.split(","))
                 .anyMatch(validCriteria::contains)) {
             throw new ValidationException("Invalid search criteria. Use 'title', 'director' or both");
         }
+        if (by.contains(Search.title.toString()) && by.contains(Search.director.toString())) {
+            by = "all";
+        } else {
+            by = normalizedBy;
+        }
 
-        String queryLower = query.toLowerCase();
-        Collection<Film> allFilms = filmStorage.getFilms();
-        boolean searchByTitle = by.contains("title");
-        boolean searchByDirector = by.contains("director");
-        return allFilms.stream()
-                .filter(film -> {
-
-                    if (searchByTitle && film.getName() != null) {
-                        if (film.getName().toLowerCase().contains(queryLower)) {
-                            return true;
-                        }
-                    }
-
-                    if (searchByDirector && film.getDirectors() != null) {
-                        return film.getDirectors().stream()
-                                .filter(Objects::nonNull)
-                                .map(Director::getName)
-                                .filter(Objects::nonNull)
-                                .anyMatch(directorName ->
-                                        directorName.toLowerCase().contains(queryLower)
-                                );
-                    }
-
-                    return false;
-                })
-                .sorted(Comparator.comparingInt((Film film) ->
-                        film.getLike() != null ? -film.getLike().size() : 0
-                ))
-                .collect(Collectors.toList());
+        return filmStorage.searchFilmsByQuery(query, by);
     }
 
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {

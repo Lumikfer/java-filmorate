@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,7 @@ public class FilmController {
         filmService.deleteLike(id, userId);
     }
 
+    @Validated
     @GetMapping("/popular")
     public List<Film> getPopularFilmByGenre(@RequestParam(defaultValue = "10") Integer count,
                                             @Positive @RequestParam(required = false) Integer year,
@@ -73,11 +75,12 @@ public class FilmController {
         return filmService.getCommonFilms(userId, friendId);
     }
 
+    @Validated
     @GetMapping("/search")
-    public List<Film> searchFilms(@RequestParam String query,
+    public List<Film> searchFilms(@NotBlank @RequestParam String query,
                                   @RequestParam(defaultValue = "title,director") String by) {
 
-        return filmService.searchFilms(query, by);
+        return filmService.searchFilmsByQuery(query, by);
     }
 
     @GetMapping("/director/{directorId}")
