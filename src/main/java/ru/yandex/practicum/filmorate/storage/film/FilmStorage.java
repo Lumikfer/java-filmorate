@@ -25,5 +25,7 @@ public interface FilmStorage {
 
     List<Film> getFilmsByDirectorId(int directorId, String sortBy);
 
-    Boolean chekLikeForFilm(int filmId, int userId);
+    Boolean checkLikeForFilm(int filmId, int userId);
+
+    List<Film> searchFilmsByQuery(String query, String by);
 }
