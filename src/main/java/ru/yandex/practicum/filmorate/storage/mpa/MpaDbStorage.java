@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.mpa;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -18,8 +18,9 @@ import java.util.Collection;
 public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
+
     @Override
-    public Collection<Mpa> getAllMpa() {
+    public List<Mpa> getAllMpa() {
         String sql = "SELECT * FROM mpa ORDER BY mpa_id ASC";
         return jdbcTemplate.query(sql, this::mapRowToMpa);
     }
@@ -39,7 +40,6 @@ public class MpaDbStorage implements MpaStorage {
     }
 
     private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
-
         return new Mpa(rs.getInt("mpa_id"), rs.getString("name"));
     }
 }

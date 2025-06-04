@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,6 +13,7 @@ import java.util.Set;
 
 @Data
 public class Film {
+
     private int id;
 
     @NotBlank(message = "Name cannot be blank")
@@ -19,8 +22,6 @@ public class Film {
     @Size(max = 200, message = "Description cannot be longer than 200 characters")
     private String description;
 
-
-    @PastOrPresent
     private LocalDate releaseDate;
 
     @Positive(message = "Duration must be positive")
@@ -30,5 +31,8 @@ public class Film {
 
     private Mpa mpa;
 
+    private List<Director> directors = new ArrayList<>();
+
     private Set<Integer> like = new HashSet<>();
+
 }

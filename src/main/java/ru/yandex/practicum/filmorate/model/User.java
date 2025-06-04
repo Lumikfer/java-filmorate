@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
-import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -10,7 +9,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Builder
 public class User {
     private int id;
 
@@ -30,11 +28,4 @@ public class User {
 
     private Set<Integer> friends = new HashSet<>();
 
-    public void addFriend(int id) {
-        friends.add(id);
-    }
-
-    public Set<Integer> getFriends() {
-        return friends != null ? friends : new HashSet<>();
-    }
 }
