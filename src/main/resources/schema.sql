@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS film_genres (
 CREATE TABLE IF NOT EXISTS film_likes  (
     film_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    rating INT CHECK (rating BETWEEN 1 AND 10),
+    rating DOUBLE CHECK (rating BETWEEN 1 AND 10),
     PRIMARY KEY (film_id, user_id),
     FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE

@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import jakarta.validation.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.activityLog.ActivityLogStorage;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -74,7 +73,7 @@ public class FilmService {
         filmStorage.deleteFilmById(id);
     }
 
-    public void addLike(int filmId, int userId, int rating) {
+    public void addLike(int filmId, int userId, Double rating) {
         Film film = filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
         activityLogStorage.addActivity(userId, "LIKE", "ADD", filmId);
@@ -129,61 +128,25 @@ public class FilmService {
 
 
     public List<Film> getCommonFilms(int userId, int friendId) {
-        List<Film> allFilms = new ArrayList<>(filmStorage.getFilms());
-        List<Film> commonFilms = new ArrayList<>();
-
-        for (Film film : allFilms) {
-            HashMap<Integer, Integer> likes = film.getRatings();
-            if (likes != null) {
-                if (likes.contains(userId) && likes.contains(friendId)) {
-                    commonFilms.add(film);
-                }
-            }
-        }
-
-        return commonFilms.stream()
-                .sorted(Comparator.comparingInt((Film film) -> film.getRatings().size()).reversed())
-                .collect(Collectors.toList());
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
-/*
-    public List<Film> searchFilms(String query, String by) {
-        if (query == null || query.isBlank()) {
-            return Collections.emptyList();
+    public List<Film> searchFilmsByQuery(String query, String by) {
+        String normalizedBy = by.trim().toLowerCase();
+        List<String> validCriteria = List.of(Search.title.toString(), Search.director.toString());
+        if (!Arrays.stream(normalizedBy.split(","))
+                .anyMatch(validCriteria::contains)) {
+            throw new ValidationException("Invalid search criteria. Use 'title', 'director' or both");
+        }
+        if (by.contains(Search.title.toString()) && by.contains(Search.director.toString())) {
+            by = "all";
+        } else {
+            by = normalizedBy;
         }
 
-        String queryLower = query.toLowerCase();
-        Collection<Film> allFilms = filmStorage.getFilms();
-        boolean searchByTitle = by.contains("title");
-        boolean searchByDirector = by.contains("director");
-        return allFilms.stream()
-                .filter(film -> {
-
-                    if (searchByTitle && film.getName() != null) {
-                        if (film.getName().toLowerCase().contains(queryLower)) {
-                            return true;
-                        }
-                    }
-
-                    if (searchByDirector && film.getDirectors() != null) {
-                        return film.getDirectors().stream()
-                                .filter(Objects::nonNull)
-                                .map(Director::getName)
-                                .filter(Objects::nonNull)
-                                .anyMatch(directorName ->
-                                        directorName.toLowerCase().contains(queryLower)
-                                );
-                    }
-
-                    return false;
-                })
-                .sorted(Comparator.comparingInt((Film film) ->
-                        film.getRatings() != null ? -film.getRatings().size() : 0
-                ))
-                .collect(Collectors.toList());
+        return filmStorage.searchFilmsByQuery(query, by);
     }
 
-     */
 
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
         log.debug("Получение фильмов режисера с ID: {} с сортировкой по '{}'", directorId, sortBy);

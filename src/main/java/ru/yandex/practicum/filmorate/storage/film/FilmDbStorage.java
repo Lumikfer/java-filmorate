@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.Search;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -93,7 +94,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setDuration(rs.getInt("duration"));
         film.setMpa(getMpa(rs.getInt("mpa_id")));
         film.setGenres(getGenres(rs.getInt("film_id")));
-        film.setRating(getRatings(rs.getInt("film_id")));
+        film.setRate(getRatings(rs.getInt("film_id")));
         film.setDirectors(getDirectors(rs.getInt("film_id")));
         return film;
     }
@@ -102,6 +103,35 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT * FROM mpa WHERE mpa_id = ?";
         return jdbcTemplate.queryForObject(sql, (rs, rowNum)
                 -> new Mpa(rs.getInt("mpa_id"), rs.getString("name")), mpaId);
+    }
+
+    public List<Film> searchFilmsByQuery(String query, String by) {
+        List<Object> params = new ArrayList<>();
+        StringBuilder sqlLine = new StringBuilder();
+        String queryLower = query.toLowerCase();
+        String searchTerm = "%" + queryLower + "%";
+
+        if (by.contains(Search.director.toString())) {
+            sqlLine.append("WHERE d.name ILIKE ? ");
+            params.add(searchTerm);
+        } else if (by.contains("all")) {
+            sqlLine.append("WHERE f.name ILIKE ? OR d.name ILIKE ? "); //запрос именно такой будет, так требуют постман тесты
+            params.add(searchTerm);
+            params.add(searchTerm);
+        } else {
+            sqlLine.append("WHERE f.name ILIKE ? ");
+            params.add(searchTerm);
+        }
+
+        String sql = "SELECT f.*, d.name AS director_name " +
+                "FROM films f " +
+                "LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+                sqlLine.toString() +
+                "GROUP BY f.film_id, d.name " +
+                "ORDER BY f.film_id";
+
+        return jdbcTemplate.query(sql, params.toArray(), this::mapRowToFilm);
     }
 
     private List<Genre> getGenres(int filmId) {
@@ -133,7 +163,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private Double getRatings(int filmId) {
         String sql = "SELECT AVG(rating) AS average_rating FROM film_likes WHERE film_id = ?";
-        Double averageRating = jdbcTemplate.queryForObject(sql, new Object[]{filmId}, Double.class);
+        Double   averageRating = jdbcTemplate.queryForObject(sql, new Object[]{filmId}, Double.class);
 
         return averageRating != null ? averageRating : ZERO;
     }
@@ -145,7 +175,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void addRating(int filmId, int userId, int rating) {
+    public void addRating(int filmId, int userId, Double rating) {
         String sql = "INSERT INTO film_likes (film_id, user_id, rating) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, filmId, userId, rating);
     }
@@ -205,18 +235,11 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapRowToFilm, params.toArray());
     }
 
-
-    @Override
-    public List<Film> searchFilm(String string) {
-
-        return List.of();
-    }
-
     @Override
     public List<Film> getFilmsByDirectorId(int directorId, String sortBy) {
         String orderByClause = switch (sortBy.toLowerCase()) {
             case "year" -> "f.release_date";
-            case "likes" -> "like_count DESC";
+            case "rate" -> "like_count DESC";
             default -> throw new IllegalArgumentException("Неподдерживаемый параметр сортировки: " + sortBy);
         };
 
@@ -232,6 +255,57 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY " + orderByClause;
 
         return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
+    }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        String sql = """
+                     SELECT f.*
+                     FROM films f
+                     INNER JOIN film_likes fl ON f.film_id = fl.film_id AND fl.user_id = ?
+                     INNER JOIN film_likes fl_by_friend ON f.film_id = fl_by_friend.film_id AND fl_by_friend.user_id = ?
+                     INNER JOIN film_likes all_likes ON f.film_id = all_likes.film_id
+                     GROUP BY f.film_id
+                     ORDER BY COUNT(all_likes.user_id) DESC
+                     """;
+        return jdbcTemplate.query(sql, this::mapRowToFilm, userId, friendId);
+    }
+
+    public List<Film> getRecomendationFilm(int userId) {
+        String sql = """
+                WITH liked_films AS (
+                    SELECT fl.film_id
+                    FROM film_likes fl
+                    WHERE fl.user_id = ? AND fl.rating > 5
+                ),
+                other_users AS (
+                    SELECT fl.user_id, COUNT(*) AS like_count
+                    FROM film_likes fl
+                    JOIN liked_films lf ON fl.film_id = lf.film_id
+                    WHERE fl.user_id != ?
+                    GROUP BY fl.user_id
+                ),
+                top_user AS (
+                    SELECT user_id
+                    FROM other_users
+                    ORDER BY like_count DESC
+                    LIMIT 1
+                ),
+                top_user_films AS (
+                    SELECT fl.film_id
+                    FROM film_likes fl
+                    WHERE fl.user_id = (SELECT user_id FROM top_user) AND fl.rating > 5
+                )
+                SELECT f.*
+                FROM films f
+                WHERE f.film_id IN (SELECT film_id FROM top_user_films)
+                AND f.film_id NOT IN (
+                    SELECT film_id
+                    FROM film_likes
+                    WHERE user_id = ?
+                );
+                """;
+
+        return jdbcTemplate.query(sql, new Object[]{userId, userId, userId}, this::mapRowToFilm);
     }
 
 }

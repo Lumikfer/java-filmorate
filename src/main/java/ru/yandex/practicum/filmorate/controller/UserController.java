@@ -37,47 +37,46 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+    public void addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         userService.addFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriends(@PathVariable int id) {
+    public List<User> getFriends(@PathVariable Integer id) {
         return userService.getFriendByIdUser(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable int id,
-                                       @PathVariable int otherId) {
+    public List<User> getCommonFriends(@PathVariable Integer id,
+                                       @PathVariable Integer otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFriend(@PathVariable int id,
-                             @PathVariable int friendId) {
+    public void removeFriend(@PathVariable Integer id,
+                             @PathVariable Integer friendId) {
         userService.deleteFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable int id) {
+    public void deleteUser(@PathVariable Integer id) {
         userService.deleteUserById(id);
     }
-/*
+
+
     @GetMapping("/{userId}/recommendations")
-    public List<Film> recomend(@PathVariable int userId) {
+    public List<Film> recomend(@PathVariable Integer userId) {
         return userService.recommendation(userId);
     }
 
- */
-
     @GetMapping("/{id}/feed")
-    public List<ActivityLog> getActivityLogForUserId(@PathVariable int id) {
+    public List<ActivityLog> getActivityLogForUserId(@PathVariable Integer id) {
         return userService.getActivityLogForUserId(id);
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable int id) {
+    public User getUserById(@PathVariable Integer id) {
         return userService.getUserById(id);
     }
 }

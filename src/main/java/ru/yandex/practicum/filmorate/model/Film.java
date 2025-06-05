@@ -30,6 +30,6 @@ public class Film {
 
     private List<Director> directors = new ArrayList<>();
 
-    private Double rating;
+    private Double rate;
 
 }

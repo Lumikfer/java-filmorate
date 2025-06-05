@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -84,53 +83,9 @@ public class UserService {
         userStorage.removeFriend(userId, friendId);
     }
 
-    /*
-
     public List<Film> recommendation(int userId) {
-        List<Film> allFilms = new ArrayList<>(filmStorage.getFilms());
-        Collection<User> allUsers = userStorage.getUsers();
-
-        Set<Integer> currentUserLikes = allFilms.stream()
-                .filter(f -> f.getRatings().contains(userId))
-                .map(Film::getId)
-                .collect(Collectors.toSet());
-
-        Map<Integer, Integer> similarityMap = new HashMap<>();
-
-        for (User user : allUsers) {
-            if (user.getId() == userId) continue;
-
-            Set<Integer> userLikes = allFilms.stream()
-                    .filter(f -> f.getRatings().contains(user.getId()))
-                    .map(Film::getId)
-                    .collect(Collectors.toSet());
-
-            Set<Integer> commonLikes = new HashSet<>(currentUserLikes);
-            commonLikes.retainAll(userLikes);
-
-            similarityMap.put(user.getId(), commonLikes.size());
-        }
-
-        Optional<Map.Entry<Integer, Integer>> bestMatch = similarityMap.entrySet()
-                .stream()
-                .max(Map.Entry.comparingByValue());
-
-        if (bestMatch.isEmpty() || bestMatch.get().getValue() == 0) {
-            return Collections.emptyList();
-        }
-
-        int recommendedUserId = bestMatch.get().getKey();
-
-        return allFilms.stream()
-                .filter(f ->
-                        f.getRatings().contains(recommendedUserId) &&
-                                !f.getRatings().contains(userId) &&
-                                !currentUserLikes.contains(f.getId())
-                )
-                .collect(Collectors.toList());
+        return filmStorage.getRecomendationFilm(userId);
     }
-
-     */
 
     public List<ActivityLog> getActivityLogForUserId(int id) {
         userStorage.getUserById(id);
