@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -19,8 +19,8 @@ import java.util.*;
 @RequiredArgsConstructor
 @Primary
 public class UserDbStorage implements UserStorage {
-
     private final JdbcTemplate jdbcTemplate;
+
 
     @Override
     public User addUser(User user) {
@@ -49,10 +49,9 @@ public class UserDbStorage implements UserStorage {
         List<User> users = jdbcTemplate.query(sql, this::mapRowToUser, id);
 
         if (users.isEmpty()) {
-            return null;
+            throw new NotFoundException("Такого пользователя нет");
         } else {
-            User user = users.get(0);
-            return user;
+            return users.getFirst();
         }
     }
 
@@ -60,7 +59,8 @@ public class UserDbStorage implements UserStorage {
     public User updateUser(User user) {
 
         String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
-        int rowsUpdated = jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
+        int rowsUpdated = jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(),
+                user.getBirthday(), user.getId());
 
         if (rowsUpdated == 0) {
             throw new RuntimeException("User not found with id: " + user.getId());
@@ -81,19 +81,21 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        if (getUserById(userId) == null || getUserById(friendId) == null) {
-            throw new NotFoundException("One or both users not found");
-        }
-
-        String sql = "MERGE INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
+        String sql = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, friendId);
     }
 
-
     public void removeFriend(int userId, int friendId) {
-
         String sql = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
-        int rowsDeleted = jdbcTemplate.update(sql, userId, friendId);
+        jdbcTemplate.update(sql, userId, friendId);
+    }
+
+    @Override
+    public Boolean chekFriendsForUser(int userId, int friendId) {
+        String checkSql = "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, userId, friendId);
+
+        return count != null && count > 0;
     }
 
     @Override
@@ -104,8 +106,25 @@ public class UserDbStorage implements UserStorage {
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
+        User user = new User();
+        user.setId(rs.getInt("user_id"));
+        user.setEmail(rs.getString("email"));
+        user.setLogin(rs.getString("login"));
+        user.setName(rs.getString("name"));
+        user.setBirthday(rs.getDate("birthday").toLocalDate());
+        user.setFriends(getFriendsId(rs.getInt("user_id")));
+        return user;
+    }
 
-        return User.builder().id(rs.getInt("user_id")).email(rs.getString("email")).login(rs.getString("login")).name(rs.getString("name")).birthday(rs.getDate("birthday").toLocalDate()).build();
+    public Set<Integer> getFriendsId(int userId) {
+        String sql = """
+                SELECT friend_id
+                FROM friends
+                WHERE user_id = ?
+                ORDER BY friend_id
+                """;
+        List<Integer> friendsId = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("friend_id"), userId);
+        return new HashSet<>(friendsId);
     }
 
     @Override
@@ -118,7 +137,12 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getCommonFriends(int userId, int otherId) {
 
-        String sql = "SELECT u.* FROM users u " + "JOIN friends f1 ON u.user_id = f1.friend_id " + "JOIN friends f2 ON u.user_id = f2.friend_id " + "WHERE f1.user_id = ? AND f2.user_id = ?";
+        String sql = """
+                SELECT u.* FROM users u
+                JOIN friends f1 ON u.user_id = f1.friend_id
+                JOIN friends f2 ON u.user_id = f2.friend_id
+                WHERE f1.user_id = ? AND f2.user_id = ?
+                """;
         return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
     }
 }
